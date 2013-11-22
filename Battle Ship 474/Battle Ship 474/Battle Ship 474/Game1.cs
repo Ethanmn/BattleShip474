@@ -16,8 +16,14 @@ namespace Battle_Ship_474
     /// </summary>
     public class Game1 : Microsoft.Xna.Framework.Game
     {
+        const int NUM = 8;
+
         GraphicsDeviceManager graphics;
         SpriteBatch spriteBatch;
+        SpriteFont font;
+        Vector2 pos = new Vector2(0.0f, 0.0f);
+        float add = 1.0f;
+        int[,] wat = new int[NUM, NUM];
 
         public Game1()
         {
@@ -35,6 +41,14 @@ namespace Battle_Ship_474
         {
             // TODO: Add your initialization logic here
 
+            for (int i = 0; i < NUM; i++)
+            {
+                for (int j = 0; j < NUM; j++)
+                {
+                    wat[i,j] = i;
+                }
+            }
+
             base.Initialize();
         }
 
@@ -46,6 +60,7 @@ namespace Battle_Ship_474
         {
             // Create a new SpriteBatch, which can be used to draw textures.
             spriteBatch = new SpriteBatch(GraphicsDevice);
+            font = Content.Load<SpriteFont>("SpriteFont1");
 
             // TODO: use this.Content to load your game content here
         }
@@ -72,6 +87,14 @@ namespace Battle_Ship_474
 
             // TODO: Add your update logic here
 
+            if (pos.X > 100.0f || pos.X < 0.0f)
+            {
+                add = -add;
+            }
+
+            pos.X += add;
+            pos.Y += add;
+
             base.Update(gameTime);
         }
 
@@ -84,6 +107,18 @@ namespace Battle_Ship_474
             GraphicsDevice.Clear(Color.CornflowerBlue);
 
             // TODO: Add your drawing code here
+
+            spriteBatch.Begin();
+            spriteBatch.DrawString(font, "Hai world!!!!", pos, Color.OrangeRed);
+            
+            for (int i = 0; i < NUM; i++)
+            {
+                for (int j = 0; j < NUM; j++)
+                {
+                    spriteBatch.DrawString(font, wat[i,j] + "", new Vector2((float)i * 100, (float)j * 100), Color.DeepPink);
+                }
+            }
+            spriteBatch.End();
 
             base.Draw(gameTime);
         }
