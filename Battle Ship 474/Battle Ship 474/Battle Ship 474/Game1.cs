@@ -18,6 +18,7 @@ namespace Battle_Ship_474
     {
         const int NUM = 8;
 
+        KeyboardState keyState;
         GraphicsDeviceManager graphics;
         SpriteBatch spriteBatch;
         SpriteFont font;
@@ -45,7 +46,7 @@ namespace Battle_Ship_474
             {
                 for (int j = 0; j < NUM; j++)
                 {
-                    wat[i,j] = i;
+                    wat[i, j] = i;
                 }
             }
 
@@ -95,6 +96,50 @@ namespace Battle_Ship_474
             pos.X += add;
             pos.Y += add;
 
+            keyState = Keyboard.GetState();
+
+            if (keyState.IsKeyDown(Keys.A))
+                wat[0, 0] = 10;
+            if (keyState.IsKeyDown(Keys.B))
+                wat[0, 0] = 20;
+            if (keyState.IsKeyDown(Keys.C))
+                wat[0, 0] = 30;
+            if (keyState.IsKeyDown(Keys.D))
+                wat[0, 0] = 40;
+            if (keyState.IsKeyDown(Keys.E))
+                wat[0, 0] = 50;
+            if (keyState.IsKeyDown(Keys.F))
+                wat[0, 0] = 60;
+            if (keyState.IsKeyDown(Keys.G))
+                wat[0, 0] = 70;
+            if (keyState.IsKeyDown(Keys.H))
+                wat[0, 0] = 80;
+            if (keyState.IsKeyDown(Keys.I))
+                wat[0, 0] = 90;
+            if (keyState.IsKeyDown(Keys.J))
+                wat[0, 0] = 100;
+
+            if (keyState.IsKeyDown(Keys.D0))
+                wat[0, 0] = 0;
+            if (keyState.IsKeyDown(Keys.D1))
+                wat[0, 0] = 1;
+            if (keyState.IsKeyDown(Keys.D2))
+                wat[0, 0] = 2;
+            if (keyState.IsKeyDown(Keys.D3))
+                wat[0, 0] = 3;
+            if (keyState.IsKeyDown(Keys.D4))
+                wat[0, 0] = 4;
+            if (keyState.IsKeyDown(Keys.D5))
+                wat[0, 0] = 5;
+            if (keyState.IsKeyDown(Keys.D6))
+                wat[0, 0] = 6;
+            if (keyState.IsKeyDown(Keys.D7))
+                wat[0, 0] = 7;
+            if (keyState.IsKeyDown(Keys.D8))
+                wat[0, 0] = 8;
+            if (keyState.IsKeyDown(Keys.D9))
+                wat[0, 0] = 9;
+
             base.Update(gameTime);
         }
 
@@ -110,7 +155,7 @@ namespace Battle_Ship_474
 
             spriteBatch.Begin();
             spriteBatch.DrawString(font, "Hai world!!!!", pos, Color.OrangeRed);
-            
+
             for (int i = 0; i < NUM; i++)
             {
                 for (int j = 0; j < NUM; j++)
