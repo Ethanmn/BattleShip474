@@ -60,6 +60,7 @@ namespace Battle_Ship_474
         public bool placeShip(Ship ship)
         {
             this.ship = ship;
+            this.ship.addHealth(this.number, (int)this.letter - 'A');
             return true;
         }
     }

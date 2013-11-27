@@ -20,7 +20,8 @@ namespace Battle_Ship_474
 
         int size;
         int hits;
-        Health[] health;
+        //Health[] health;
+        List<Health> health;
         String name;
 
         public Ship()
@@ -30,11 +31,17 @@ namespace Battle_Ship_474
             this.name = "Water";
         }
 
+        public Ship(String name)
+        {
+            this.size = 0;
+            this.hits = 0;
+            this.name = name;
+        }
+
         public Ship(String name, int x0, int y0)
         {
             this.size = 1;
             this.hits = 1;
-            this.health = new Health[this.size];
             this.health[0] = new Health(x0, y0);
             this.name = name;
         }
@@ -43,7 +50,6 @@ namespace Battle_Ship_474
         {
             this.size = 2;
             this.hits = 2;
-            this.health = new Health[this.size];
             this.health[0] = new Health(x0, y0);
             this.health[1] = new Health(x1, y1);
             this.name = name;
@@ -53,7 +59,6 @@ namespace Battle_Ship_474
         {
             this.size = 3;
             this.hits = 3;
-            this.health = new Health[this.size];
             this.health[0] = new Health(x0, y0);
             this.health[1] = new Health(x1, y1);
             this.health[2] = new Health(x2, y2);
@@ -64,7 +69,6 @@ namespace Battle_Ship_474
         {
             this.size = 4;
             this.hits = 4;
-            this.health = new Health[this.size];
             this.health[0] = new Health(x0, y0);
             this.health[1] = new Health(x1, y1);
             this.health[2] = new Health(x2, y2);
@@ -76,7 +80,6 @@ namespace Battle_Ship_474
         {
             this.size = 5;
             this.hits = 5;
-            this.health = new Health[this.size];
             this.health[0] = new Health(x0, y0);
             this.health[1] = new Health(x1, y1);
             this.health[2] = new Health(x2, y2);
@@ -94,6 +97,15 @@ namespace Battle_Ship_474
         {
             this.name = name;
             return this.name;
+        }
+
+        public Health addHealth(int x, int y)
+        {
+            Health ret = new Health(x, y);
+            health.Add(ret);
+            this.size += 1;
+
+            return ret;
         }
 
         public int hit(int x, int y)
