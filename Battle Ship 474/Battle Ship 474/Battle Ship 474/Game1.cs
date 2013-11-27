@@ -31,6 +31,7 @@ namespace Battle_Ship_474
         String testString;
         Ship testShip;
         Ship testShip2;
+        bool textFlag = false;
 
         public Game1()
         {
@@ -154,7 +155,7 @@ namespace Battle_Ship_474
             if (keyState.IsKeyDown(Keys.D0))
                 testString = primaryBoard[2, 3].getShip().getName();
             if (keyState.IsKeyDown(Keys.D1))
-                testString = primaryBoard[0, 0].getShip().getName();
+                textFlag = !textFlag;
             if (keyState.IsKeyDown(Keys.D2))
                 testString = primaryBoard[1, 1].getShip().getName();
             if (keyState.IsKeyDown(Keys.D3))
@@ -192,7 +193,15 @@ namespace Battle_Ship_474
             {
                 for (int j = 0; j < NUM; j++)
                 {
-                    spriteBatch.DrawString(font, wat[i,j] + "", new Vector2((float)i * 100, (float)j * 100), Color.DeepPink);
+                    if (textFlag)
+                    {
+                        spriteBatch.DrawString(font, primaryBoard[i, j].getLetter() + "", new Vector2((float)i * 100, (float)j * 100), Color.DeepPink);
+                    }
+                    else
+                    {
+                        spriteBatch.DrawString(font, primaryBoard[i, j].getNumber() + "", new Vector2((float)i * 100, (float)j * 100), Color.DeepPink);
+                    }
+                    
                 }
             }
             spriteBatch.End();

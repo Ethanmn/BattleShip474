@@ -30,6 +30,16 @@ namespace Battle_Ship_474
             this.number = num;
         }
 
+        public char getLetter()
+        {
+            return this.letter;
+        }
+
+        public int getNumber()
+        {
+            return this.number;
+        }
+
         public Ship getShip()
         {
             return this.ship;
