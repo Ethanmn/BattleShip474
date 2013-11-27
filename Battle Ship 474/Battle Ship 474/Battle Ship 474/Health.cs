@@ -14,6 +14,9 @@ namespace Battle_Ship_474
 {
     class Health
     {
+        static int HIT = 1;
+        static int ALREADY_HIT = 2;
+
         int X;
         int Y;
         bool hit;
@@ -22,6 +25,7 @@ namespace Battle_Ship_474
         {
             this.X = x;
             this.Y = y;
+            this.hit = false;
         }
 
         public int getX()
@@ -39,14 +43,18 @@ namespace Battle_Ship_474
             return hit;
         }
 
-        public bool itsAHit(int x, int y)
+        public int itsAHit(int x, int y)
         {
+            if (this.hit)
+            {
+                return ALREADY_HIT;
+            }
+
             if (this.X == x && this.Y == y && !this.hit)
             {
                 this.hit = true;
             }
-
-            return this.hit;
+            return HIT;
         }
     }
 }

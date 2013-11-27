@@ -113,6 +113,7 @@
     <Compile Include="Game1.cs" />
     <Compile Include="Ship.cs" />
     <Compile Include="Tile.cs" />
+    <Compile Include="TrackTile.cs" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="Game.ico" />

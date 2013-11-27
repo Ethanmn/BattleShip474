@@ -24,6 +24,17 @@ namespace Battle_Ship_474
             number = 0;
         }
 
+        public Tile(char letter, int num)
+        {
+            this.letter = letter;
+            this.number = num;
+        }
+
+        public Ship getShip()
+        {
+            return this.ship;
+        }
+
         public char setLetter(char c)
         {
             this.letter = c;
@@ -36,8 +47,9 @@ namespace Battle_Ship_474
             return this.number;
         }
 
-        public bool placeShip()
+        public bool placeShip(Ship ship)
         {
+            this.ship = ship;
             return true;
         }
     }

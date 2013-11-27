@@ -17,6 +17,7 @@ namespace Battle_Ship_474
     public class Game1 : Microsoft.Xna.Framework.Game
     {
         const int NUM = 8;
+        const int SIZE = 10;
 
         KeyboardState keyState;
         GraphicsDeviceManager graphics;
@@ -25,6 +26,11 @@ namespace Battle_Ship_474
         Vector2 pos = new Vector2(0.0f, 0.0f);
         float add = 1.0f;
         int[,] wat = new int[NUM, NUM];
+        TrackTile[,] trackBoard = new TrackTile[SIZE, SIZE];
+        Tile[,] primaryBoard = new Tile[SIZE, SIZE];
+        String testString;
+        Ship testShip;
+        Ship testShip2;
 
         public Game1()
         {
@@ -49,6 +55,31 @@ namespace Battle_Ship_474
                     wat[i, j] = i;
                 }
             }
+
+            for (int i = 0; i < SIZE; i++)
+            {
+                for (int j = 0; j < SIZE; j++)
+                {
+                    trackBoard[i, j] = new TrackTile();
+                }
+            }
+
+            for (int i = 0; i < SIZE; i++)
+            {
+                for (int j = 0; j < SIZE; j++)
+                {
+                    char let = (char)((int)'A' + j);
+                    primaryBoard[i, j] = new Tile(let, i);
+                }
+            }
+
+            testShip = new Ship("Scooter", 2, 3, 0, 0);
+            testShip2 = new Ship("Falafel", 1, 1);
+            primaryBoard[2, 3].placeShip(testShip);
+            primaryBoard[0, 0].placeShip(testShip);
+            primaryBoard[1, 1].placeShip(testShip2);
+
+            testString = primaryBoard[2, 3].getShip().getName();
 
             base.Initialize();
         }
@@ -91,6 +122,7 @@ namespace Battle_Ship_474
             if (pos.X > 100.0f || pos.X < 0.0f)
             {
                 add = -add;
+                wat[0, 0] = primaryBoard[2, 3].getShip().hit(2, 3);
             }
 
             pos.X += add;
@@ -120,13 +152,13 @@ namespace Battle_Ship_474
                 wat[0, 0] = 100;
 
             if (keyState.IsKeyDown(Keys.D0))
-                wat[0, 0] = 0;
+                testString = primaryBoard[2, 3].getShip().getName();
             if (keyState.IsKeyDown(Keys.D1))
-                wat[0, 0] = 1;
+                testString = primaryBoard[0, 0].getShip().getName();
             if (keyState.IsKeyDown(Keys.D2))
-                wat[0, 0] = 2;
+                testString = primaryBoard[1, 1].getShip().getName();
             if (keyState.IsKeyDown(Keys.D3))
-                wat[0, 0] = 3;
+                primaryBoard[0, 0].getShip().setName("LOLZ");
             if (keyState.IsKeyDown(Keys.D4))
                 wat[0, 0] = 4;
             if (keyState.IsKeyDown(Keys.D5))
@@ -154,7 +186,7 @@ namespace Battle_Ship_474
             // TODO: Add your drawing code here
 
             spriteBatch.Begin();
-            spriteBatch.DrawString(font, "Hai world!!!!", pos, Color.OrangeRed);
+            spriteBatch.DrawString(font, testString, pos, Color.OrangeRed);
 
             for (int i = 0; i < NUM; i++)
             {
