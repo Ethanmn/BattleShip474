@@ -43,18 +43,17 @@ namespace Battle_Ship_474
             return hit;
         }
 
-        public int itsAHit(int x, int y)
+        public int itsAHit()
         {
             if (this.hit)
             {
                 return ALREADY_HIT;
             }
-
-            if (this.X == x && this.Y == y && !this.hit)
+            else
             {
                 this.hit = true;
+                return HIT;
             }
-            return HIT;
         }
     }
 }

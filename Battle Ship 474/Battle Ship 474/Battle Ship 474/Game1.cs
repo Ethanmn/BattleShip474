@@ -25,19 +25,47 @@ namespace Battle_Ship_474
         const int NUM = 8;
         const int SIZE = 10;
 
+        static int MISS = 0;
+        static int HIT = 1;
+        static int ALREADY_HIT = 2;
+
         KeyboardState keyState;
         GraphicsDeviceManager graphics;
+
+        //Test Stuffs
         SpriteBatch spriteBatch;
         SpriteFont font;
-        Vector2 pos = new Vector2(0.0f, 0.0f);
-        float add = 1.0f;
-        int[,] wat = new int[NUM, NUM];
-        TrackTile[,] trackBoard = new TrackTile[SIZE, SIZE];
-        Tile[,] primaryBoard = new Tile[SIZE, SIZE];
+        Vector2 pos = new Vector2(30.0f, 0.0f);
         String testString;
+        String XString;
+        String YString;
         Ship testShip;
         Ship testShip2;
-        bool textFlag = false;
+        int status;
+
+        //Input stuffs
+        int X;
+        int Y;
+        
+        //Game board stuffs
+        Tile[,] playerPBoard;
+        TrackTile[,] playerTBoard;
+
+        Tile[,] enemyPBoard;
+        TrackTile[,] enemyTBoard;
+
+        //Ship Stuffs
+        Ship pPatrolShip;
+        Ship pDestroyerShip;
+        Ship pSubShip;
+        Ship pBattleShip;
+        Ship pCarrierShip;
+
+        Ship ePatrolShip;
+        Ship eDestroyerShip;
+        Ship eSubShip;
+        Ship eBattleShip;
+        Ship eCarrierShip;
 
         public Game1()
         {
@@ -53,21 +81,34 @@ namespace Battle_Ship_474
         /// </summary>
         protected override void Initialize()
         {
-            // TODO: Add your initialization logic here
+            status = -1;
+            X = 0;
+            Y = 0;
 
-            for (int i = 0; i < NUM; i++)
-            {
-                for (int j = 0; j < NUM; j++)
-                {
-                    wat[i, j] = i;
-                }
-            }
+            playerPBoard = new Tile[SIZE, SIZE];
+            playerTBoard = new TrackTile[SIZE, SIZE];
+
+            enemyPBoard = new Tile[SIZE, SIZE];
+            enemyTBoard = new TrackTile[SIZE, SIZE];
+
+            pPatrolShip = new Ship("Patrol Boat");
+            pDestroyerShip = new Ship("Destroyer");
+            pSubShip = new Ship("Submarine");
+            pBattleShip = new Ship("Battleship");
+            pCarrierShip = new Ship("Aircraft Carrier");
+
+            ePatrolShip = new Ship("Patrol Boat");
+            eDestroyerShip = new Ship("Destroyer");
+            eSubShip = new Ship("Submarine");
+            eBattleShip = new Ship("Battleship");
+            eCarrierShip = new Ship("Aircraft Carrier");
 
             for (int i = 0; i < SIZE; i++)
             {
                 for (int j = 0; j < SIZE; j++)
                 {
-                    trackBoard[i, j] = new TrackTile();
+                    playerTBoard[i, j] = new TrackTile();
+                    enemyTBoard[i, j] = new TrackTile();
                 }
             }
 
@@ -76,17 +117,45 @@ namespace Battle_Ship_474
                 for (int j = 0; j < SIZE; j++)
                 {
                     char let = (char)((int)'A' + j);
-                    primaryBoard[i, j] = new Tile(let, i);
+                    int num = i + 1;
+                    playerPBoard[i, j] = new Tile(let, num);
+                    enemyPBoard[i, j] = new Tile(let, num);
                 }
             }
 
-            testShip = new Ship("Scooter", 2, 3, 0, 0);
-            testShip2 = new Ship("Falafel", 1, 1);
+            //Set up a static board
+
+            enemyPBoard[1, 3].placeShip(ePatrolShip);
+            enemyPBoard[2, 3].placeShip(ePatrolShip);
+            
+            enemyPBoard[4, 6].placeShip(eDestroyerShip);
+            enemyPBoard[5, 6].placeShip(eDestroyerShip);
+            enemyPBoard[6, 6].placeShip(eDestroyerShip);
+
+            enemyPBoard[8, 1].placeShip(eSubShip);
+            enemyPBoard[8, 2].placeShip(eSubShip);
+            enemyPBoard[8, 3].placeShip(eSubShip);
+
+            enemyPBoard[4, 1].placeShip(eBattleShip);
+            enemyPBoard[5, 1].placeShip(eBattleShip);
+            enemyPBoard[6, 1].placeShip(eBattleShip);
+            enemyPBoard[7, 1].placeShip(eBattleShip);
+
+            enemyPBoard[0, 5].placeShip(eCarrierShip);
+            enemyPBoard[0, 6].placeShip(eCarrierShip);
+            enemyPBoard[0, 7].placeShip(eCarrierShip);
+            enemyPBoard[0, 8].placeShip(eCarrierShip);
+            enemyPBoard[0, 9].placeShip(eCarrierShip);
+
+            /* Test things
+            testShip = new Ship("Scooter");
+            testShip2 = new Ship("Falafel");
             primaryBoard[2, 3].placeShip(testShip);
             primaryBoard[0, 0].placeShip(testShip);
             primaryBoard[1, 1].placeShip(testShip2);
+            */
 
-            testString = primaryBoard[2, 3].getShip().getName();
+            testString = enemyPBoard[2, 3].getShip().getHits() + "Rawr!";
 
             base.Initialize();
         }
@@ -124,61 +193,91 @@ namespace Battle_Ship_474
             if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed)
                 this.Exit();
 
-            // TODO: Add your update logic here
-
-            if (pos.X > 100.0f || pos.X < 0.0f)
-            {
-                add = -add;
-                wat[0, 0] = primaryBoard[2, 3].getShip().hit(2, 3);
-            }
-
-            pos.X += add;
-            pos.Y += add;
-
             keyState = Keyboard.GetState();
 
             if (keyState.IsKeyDown(Keys.A))
-                wat[0, 0] = 10;
+                Y = 0;
             if (keyState.IsKeyDown(Keys.B))
-                wat[0, 0] = 20;
+                Y = 1;
             if (keyState.IsKeyDown(Keys.C))
-                wat[0, 0] = 30;
-            if (keyState.IsKeyDown(Keys.D))
-                wat[0, 0] = 40;
+                Y = 2;
+            if (keyState.IsKeyDown(Keys.D)) 
+                Y = 3;
             if (keyState.IsKeyDown(Keys.E))
-                wat[0, 0] = 50;
+                Y = 4;
             if (keyState.IsKeyDown(Keys.F))
-                wat[0, 0] = 60;
+                Y = 5;
             if (keyState.IsKeyDown(Keys.G))
-                wat[0, 0] = 70;
+                Y = 6;
             if (keyState.IsKeyDown(Keys.H))
-                wat[0, 0] = 80;
+                Y = 7;
             if (keyState.IsKeyDown(Keys.I))
-                wat[0, 0] = 90;
+                Y = 8;
             if (keyState.IsKeyDown(Keys.J))
-                wat[0, 0] = 100;
+                Y = 9;
 
             if (keyState.IsKeyDown(Keys.D0))
-                testString = primaryBoard[2, 3].getShip().getName();
+                X = 9;
             if (keyState.IsKeyDown(Keys.D1))
-                textFlag = !textFlag;
+                X = 0;
             if (keyState.IsKeyDown(Keys.D2))
-                testString = primaryBoard[1, 1].getShip().getName();
+                X = 1;
             if (keyState.IsKeyDown(Keys.D3))
-                primaryBoard[0, 0].getShip().setName("LOLZ");
+                X = 2;
             if (keyState.IsKeyDown(Keys.D4))
-                wat[0, 0] = 4;
+                X = 3;
             if (keyState.IsKeyDown(Keys.D5))
-                wat[0, 0] = 5;
+                X = 4;
             if (keyState.IsKeyDown(Keys.D6))
-                wat[0, 0] = 6;
+                X = 5;
             if (keyState.IsKeyDown(Keys.D7))
-                wat[0, 0] = 7;
+                X = 6;
             if (keyState.IsKeyDown(Keys.D8))
-                wat[0, 0] = 8;
+                X = 7;
             if (keyState.IsKeyDown(Keys.D9))
-                wat[0, 0] = 9;
+                X = 8;
 
+            XString = (X + 1) + "";
+            YString = (char)((char)Y + 'A') + "";
+
+            if (keyState.IsKeyDown(Keys.Enter))
+            {
+                status = enemyPBoard[X, Y].hitShip();
+
+                if (status == HIT)
+                {
+                    playerTBoard[X, Y].hitEm();
+                    testString = "HIT!";
+                    if (enemyPBoard[X, Y].getShip().isSunk())
+                    {
+                        testString = "You sunk the enemy's " + enemyPBoard[X, Y].getShip().getName() + "!";
+                    }
+                }
+                else if (status == MISS)
+                {
+                    playerTBoard[X, Y].missEm();
+                    testString = "MISS!";
+                }
+                else if (status == ALREADY_HIT)
+                {
+                    testString = "ALREADY HIT!";
+                    if (enemyPBoard[X, Y].getShip().isSunk())
+                    {
+                        testString = "You sunk the enemy's " + enemyPBoard[X, Y].getShip().getName() + "!";
+                    }
+                }
+                else if (status == -1)
+                {
+                    testString = "WTF?!";
+                }
+
+                if (ePatrolShip.isSunk() && eBattleShip.isSunk() &&
+                    eSubShip.isSunk() && eDestroyerShip.isSunk() &&
+                    eCarrierShip.isSunk())
+                {
+                    testString = "YOU WIN!";
+                }
+            }
             base.Update(gameTime);
         }
 
@@ -195,21 +294,16 @@ namespace Battle_Ship_474
             spriteBatch.Begin();
             spriteBatch.DrawString(font, testString, pos, Color.OrangeRed);
 
-            for (int i = 0; i < NUM; i++)
+            for (int i = 0; i < SIZE; i++)
             {
-                for (int j = 0; j < NUM; j++)
+                for (int j = 0; j < SIZE; j++)
                 {
-                    if (textFlag)
-                    {
-                        spriteBatch.DrawString(font, primaryBoard[i, j].getLetter() + "", new Vector2((float)i * 100, (float)j * 100), Color.DeepPink);
-                    }
-                    else
-                    {
-                        spriteBatch.DrawString(font, primaryBoard[i, j].getNumber() + "", new Vector2((float)i * 100, (float)j * 100), Color.DeepPink);
-                    }
-                    
+                    spriteBatch.DrawString(font, playerTBoard[i, j].getStatus() + "", new Vector2((float)i * 85, (float)j * 50), Color.DeepPink); 
                 }
             }
+
+            spriteBatch.DrawString(font, XString, new Vector2(60, 35), Color.BurlyWood);
+            spriteBatch.DrawString(font, YString, new Vector2(50, 35), Color.BurlyWood);
             spriteBatch.End();
 
             base.Draw(gameTime);
