@@ -21,7 +21,7 @@ namespace Battle_Ship_474
         int size;
         int hits;
         //Health[] health;
-        List<Health> health;
+        List<Health> health = new List<Health>();
         String name;
 
         public Ship()
@@ -37,7 +37,7 @@ namespace Battle_Ship_474
             this.hits = 0;
             this.name = name;
         }
-
+        /*
         public Ship(String name, int x0, int y0)
         {
             this.size = 1;
@@ -87,7 +87,7 @@ namespace Battle_Ship_474
             this.health[4] = new Health(x4, y4);
             this.name = name;
         }
-
+        */
         public String getName()
         {
             return this.name;

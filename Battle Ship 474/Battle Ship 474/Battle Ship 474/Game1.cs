@@ -79,9 +79,9 @@ namespace Battle_Ship_474
                     primaryBoard[i, j] = new Tile(let, i);
                 }
             }
-
-            testShip = new Ship("Scooter", 2, 3, 0, 0);
-            testShip2 = new Ship("Falafel", 1, 1);
+            
+            testShip = new Ship("Scooter");
+            testShip2 = new Ship("Falafel");
             primaryBoard[2, 3].placeShip(testShip);
             primaryBoard[0, 0].placeShip(testShip);
             primaryBoard[1, 1].placeShip(testShip2);
