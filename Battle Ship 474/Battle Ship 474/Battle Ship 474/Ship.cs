@@ -21,7 +21,7 @@ namespace Battle_Ship_474
         public static int HOR = 1, VER = 2;
 
         int size;
-        int orientation = 0;
+        int orientation = HOR;
         int hits;
         List<Health> health;
         String name;
