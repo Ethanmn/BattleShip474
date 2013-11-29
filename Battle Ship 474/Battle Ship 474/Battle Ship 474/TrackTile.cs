@@ -29,6 +29,11 @@ namespace Battle_Ship_474
             return this.status;
         }
 
+        public void setStatus(int status)
+        {
+            this.status = status;
+        }
+
         public void hitEm()
         {
             this.status = HIT;

@@ -40,7 +40,7 @@ namespace Battle_Ship_474
         //Test Stuffs
         SpriteBatch spriteBatch;
         SpriteFont font, ffont;
-        Vector2 pos = new Vector2(30.0f, 0.0f);
+        Vector2 pos = new Vector2(30.0f, 55.0f);
         String testString;
         String XString;
         String YString;
@@ -82,6 +82,7 @@ namespace Battle_Ship_474
         bool playerturn = true;
         float enemyturntimer = 0;
         int currentlyPlacing = 0;
+      
         Texture2D usedTile, unusedTile;
 
         //AI stuffs
@@ -219,7 +220,7 @@ namespace Battle_Ship_474
             pCarrierShip.setStart(0, 1);
             pCarrierShip.setOrientation(Ship.VER);
             */
-            testString = enemyShips[0].getSize() + "";
+            testString = "Falafel";
 
             base.Initialize();
         }
@@ -582,8 +583,11 @@ namespace Battle_Ship_474
                     clicked = false;
                 }
 
-                if (enemyturntimer > 0) enemyturntimer -= gameTime.ElapsedGameTime.Milliseconds;
-                if (enemyturntimer < 0) { enemyturntimer = 0; playerturn = true; }
+                if (enemyturntimer > 0)
+                {
+                    enemyturntimer -= gameTime.ElapsedGameTime.Milliseconds;
+                }
+                if (enemyturntimer < 0) { testString = enemy.attack() + ""; enemyturntimer = 0; playerturn = true; }
             }
 
             if (!clicked)
@@ -628,11 +632,11 @@ namespace Battle_Ship_474
             GraphicsDevice.Clear(Color.Black);
 
             // TODO: Add your drawing code here
-            /*
+            
             spriteBatch.Begin();
             spriteBatch.DrawString(font, testString, pos, Color.OrangeRed);
 
-            for (int i = 0; i < SIZE; i++)
+            /*for (int i = 0; i < SIZE; i++)
             {
                 for (int j = 0; j < SIZE; j++)
                 {
@@ -641,9 +645,9 @@ namespace Battle_Ship_474
             }
 
             spriteBatch.DrawString(font, XString, new Vector2(60, 35), Color.BurlyWood);
-            spriteBatch.DrawString(font, YString, new Vector2(50, 35), Color.BurlyWood);
+            spriteBatch.DrawString(font, YString, new Vector2(50, 35), Color.BurlyWood);*/
                             
-            spriteBatch.End();*/
+            spriteBatch.End();
 
             RasterizerState rs = new RasterizerState();
             rs.CullMode = CullMode.CullCounterClockwiseFace;
