@@ -18,11 +18,14 @@ namespace Battle_Ship_474
         static int MISS = 0;
         static int HIT = 1;
         static int ALREADY_HIT = 2;
+        public static int HOR = 1, VER = 2;
 
         int size;
+        int orientation = 0;
         int hits;
         List<Health> health;
         String name;
+        int x = -1, y = -1;
 
         public Ship()
         {
@@ -39,6 +42,19 @@ namespace Battle_Ship_474
             health = new List<Health>();
             this.name = name;
         }
+
+        public void setStart(int x, int y)
+        {
+            this.x = x;
+            this.y = y;
+        }
+        public int getStartX() { return x; }
+        public int getStartY() { return y; }
+        public void setOrientation(int o)
+        {
+            this.orientation = o;
+        }
+        public int getOrientation() { return orientation; }
 
         public int getSize()
         {
