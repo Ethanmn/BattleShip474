@@ -82,47 +82,7 @@ namespace Battle_Ship_474
         bool playerturn = true;
         float enemyturntimer = 0;
         int currentlyPlacing = 0;
-        String testString;
-        String XString;
-        String YString;
-        Ship testShip;
-        Ship testShip2;
-        int status;
-        
-        //Game board stuffs
-        Tile[,] playerPBoard;
-        TrackTile[,] playerTBoard;
-
-        Tile[,] enemyPBoard;
-        TrackTile[,] enemyTBoard;
-
-        //Ship Stuffs
-        Ship[] playerShips;
-        Ship[] enemyShips;
-
-        Ship pPatrolShip;
-        Ship pDestroyerShip;
-        Ship pSubShip;
-        Ship pBattleShip;
-        Ship pCarrierShip;
-
-        Ship ePatrolShip;
-        Ship eDestroyerShip;
-        Ship eSubShip;
-        Ship eBattleShip;
-        Ship eCarrierShip;
-
-        BoardVisuals visuals;
-        bool clicked = false;
-        bool scrolled = false;
-        int pscroll = 0;
-
-        bool placement_done = false;
-        bool victory = false;
-        bool gameover = false;
-        bool playerturn = true;
-        float enemyturntimer = 0;
-        int currentlyPlacing = 0;
+      
         Texture2D usedTile, unusedTile;
 
         //AI stuffs
