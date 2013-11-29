@@ -14,9 +14,9 @@ namespace Battle_Ship_474
 {
     class TrackTile
     {
-        static int EMPTY = -1;
-        static int MISS = 0;
-        static int HIT = 1;
+        public static int EMPTY = -1;
+        public static int MISS = 0;
+        public static int HIT = 1;
         int status;
 
         public TrackTile()

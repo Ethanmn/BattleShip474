@@ -31,12 +31,15 @@ namespace Battle_Ship_474
         static int HIT = 1;
         static int ALREADY_HIT = 2;
 
+        public const int INTRO_STATE = 0, PLACEMENT_STATE = 1, GAME_STATE = 2, END_STATE = 3;
+        public static int current_state = INTRO_STATE;
+
         KeyboardState keyState;
         GraphicsDeviceManager graphics;
 
         //Test Stuffs
         SpriteBatch spriteBatch;
-        SpriteFont font;
+        SpriteFont font, ffont;
         Vector2 pos = new Vector2(30.0f, 0.0f);
         String testString;
         String XString;
@@ -44,10 +47,6 @@ namespace Battle_Ship_474
         Ship testShip;
         Ship testShip2;
         int status;
-
-        //Input stuffs
-        int X;
-        int Y;
         
         //Game board stuffs
         Tile[,] playerPBoard;
@@ -72,6 +71,18 @@ namespace Battle_Ship_474
         Ship eBattleShip;
         Ship eCarrierShip;
 
+        BoardVisuals visuals;
+        bool clicked = false;
+        bool scrolled = false;
+        int pscroll = 0;
+
+        bool placement_done = false;
+        bool victory = false;
+        bool gameover = false;
+        bool playerturn = true;
+        float enemyturntimer = 0;
+        int currentlyPlacing = 0;
+
         //AI stuffs
         AI enemy;
 
@@ -79,6 +90,11 @@ namespace Battle_Ship_474
         {
             graphics = new GraphicsDeviceManager(this);
             Content.RootDirectory = "Content";
+
+            graphics.PreferredBackBufferWidth = 1000;
+            graphics.PreferredBackBufferHeight = 600;
+
+            this.IsMouseVisible = true;
         }
 
         /// <summary>
@@ -90,8 +106,6 @@ namespace Battle_Ship_474
         protected override void Initialize()
         {
             status = -1;
-            X = 0;
-            Y = 0;
 
             playerPBoard = new Tile[SIZE, SIZE];
             playerTBoard = new TrackTile[SIZE, SIZE];
@@ -172,6 +186,38 @@ namespace Battle_Ship_474
             enemyPBoard[0, 9].placeShip(eCarrierShip);
             */
 
+            playerPBoard[0, 0].placeShip(pPatrolShip);
+            playerPBoard[1, 0].placeShip(pPatrolShip);
+            pPatrolShip.setStart(0, 0);
+            pPatrolShip.setOrientation(Ship.HOR);
+
+            playerPBoard[4, 6].placeShip(pDestroyerShip);
+            playerPBoard[5, 6].placeShip(pDestroyerShip);
+            playerPBoard[6, 6].placeShip(pDestroyerShip);
+            pDestroyerShip.setStart(4, 6);
+            pDestroyerShip.setOrientation(Ship.HOR);
+
+            playerPBoard[7, 9].placeShip(pSubShip);
+            playerPBoard[8, 9].placeShip(pSubShip);
+            playerPBoard[9, 9].placeShip(pSubShip);
+            pSubShip.setStart(7, 9);
+            pSubShip.setOrientation(Ship.HOR);
+
+            playerPBoard[4, 1].placeShip(pBattleShip);
+            playerPBoard[4, 2].placeShip(pBattleShip);
+            playerPBoard[4, 3].placeShip(pBattleShip);
+            playerPBoard[4, 4].placeShip(pBattleShip);
+            pBattleShip.setStart(4, 1);
+            pBattleShip.setOrientation(Ship.VER);
+
+            playerPBoard[0, 1].placeShip(pCarrierShip);
+            playerPBoard[0, 2].placeShip(pCarrierShip);
+            playerPBoard[0, 3].placeShip(pCarrierShip);
+            playerPBoard[0, 4].placeShip(pCarrierShip);
+            playerPBoard[0, 5].placeShip(pCarrierShip);
+            pCarrierShip.setStart(0, 1);
+            pCarrierShip.setOrientation(Ship.VER);
+
             testString = enemyShips[0].getSize() + "";
 
             base.Initialize();
@@ -186,8 +232,9 @@ namespace Battle_Ship_474
             // Create a new SpriteBatch, which can be used to draw textures.
             spriteBatch = new SpriteBatch(GraphicsDevice);
             font = Content.Load<SpriteFont>("SpriteFont1");
+            ffont = Content.Load<SpriteFont>("FancyFont");
 
-            // TODO: use this.Content to load your game content here
+            visuals = new BoardVisuals(this);
         }
 
         /// <summary>
@@ -212,7 +259,7 @@ namespace Battle_Ship_474
 
             keyState = Keyboard.GetState();
 
-            if (keyState.IsKeyDown(Keys.A))
+            /*if (keyState.IsKeyDown(Keys.A))
                 Y = 0;
             if (keyState.IsKeyDown(Keys.B))
                 Y = 1;
@@ -257,9 +304,9 @@ namespace Battle_Ship_474
                 X = 8;
 
             XString = (X + 1) + "";
-            YString = (char)((char)Y + 'A') + "";
+            YString = (char)((char)Y + 'A') + "";*/
 
-            if (keyState.IsKeyDown(Keys.Enter))
+            /*if (keyState.IsKeyDown(Keys.Enter))
             {
                 status = enemyPBoard[X, Y].hitShip();
 
@@ -293,14 +340,178 @@ namespace Battle_Ship_474
                 /*if (ePatrolShip.isSunk() && eBattleShip.isSunk() &&
                     eSubShip.isSunk() && eDestroyerShip.isSunk() &&
                     eCarrierShip.isSunk())*/
-
+            /*
                 if (enemyShips[0].isSunk() && enemyShips[1].isSunk() &&
                     enemyShips[2].isSunk() && enemyShips[3].isSunk() &&
                     enemyShips[4].isSunk())
                 {
                     testString = "YOU WIN!";
                 }
+            }*/
+
+            if (current_state == PLACEMENT_STATE)
+            {
+                int mx = Mouse.GetState().X;
+                int my = Mouse.GetState().Y;
+
+                int x = -1;
+                int y = -1;
+
+                if (pPatrolShip.getStartX() != -1 && pSubShip.getStartX() != -1 && pBattleShip.getStartX() != -1 &&
+                    pDestroyerShip.getStartX() != -1 && pCarrierShip.getStartX() != -1)
+                    placement_done = true;
+
+                if (mx > 325 && my > 210 && mx < 670 && my < 535)
+                {
+                    x = (mx - 325) * 10 / (670 - 325);
+                    y = (my - 210) * 10 / (535 - 210);
+                    y = -y + 9;
+                }
+
+                /*bool rotate = false;
+                if (x >= 0 && x < 10 && y >= 0 && y < 10)
+                {
+                    if ((Mouse.GetState().ScrollWheelValue != pscroll || Mouse.GetState().RightButton == ButtonState.Pressed) && !scrolled)
+                    {
+                        scrolled = true;
+                        pscroll = Mouse.GetState().ScrollWheelValue;
+                        rotate = true;
+                    }
+                    if (!(Mouse.GetState().ScrollWheelValue != pscroll || Mouse.GetState().RightButton == ButtonState.Pressed))
+                        scrolled = false;
+
+                    if (currentlyPlacing == 0) // patrol boat
+                    {
+                        if (pPatrolShip.getOrientation() == Ship.HOR)
+                        {
+                            if (x + pPatrolShip.getSize() < 10)
+                            {
+                                pPatrolShip.setStart(x, y);
+                            }
+                        }
+                        else
+                        {
+                            if (y + pPatrolShip.getSize() < 10)
+                            {
+                                pPatrolShip.setStart(x, y);                                
+                            }
+                        }
+
+                        if (rotate)
+                            pPatrolShip.setOrientation(pPatrolShip.getOrientation() == Ship.HOR ? Ship.VER : Ship.HOR);
+                        if (Mouse.GetState().LeftButton == ButtonState.Pressed && !clicked)
+                        {
+                            if (pPatrolShip.getOrientation() == Ship.HOR)
+                            {
+                                if (y + pPatrolShip.getSize() < 10)
+                                {
+                                    currentlyPlacing++;
+                                    clicked = true;
+                                }
+                            }
+                            else
+                            {
+                                if (x + pPatrolShip.getSize() < 10)
+                                {
+                                    currentlyPlacing++;
+                                    clicked = true;
+                                }
+                            }
+                        }
+                    }
+                    else if (currentlyPlacing == 1) // Sub
+                    {
+
+                    }
+                }*/
+
             }
+
+
+            if (current_state == GAME_STATE)
+            {
+                int mx = Mouse.GetState().X;
+                int my = Mouse.GetState().Y;
+
+                int x = -1;
+                int y = -1;
+
+                if (mx > 340 && my > 90 && mx < 650 && my < 380)
+                {
+                    x = (mx - 340) * 10 / (650 - 340);
+                    y = (my - 90) * 10 / (380 - 90);
+                    y = -y + 9;
+                }
+
+                if (!clicked && playerturn && x != -1 && y != -1)
+                {
+                    if (Mouse.GetState().LeftButton == ButtonState.Pressed)
+                    {
+                        if (playerTBoard[x, y].getStatus() == TrackTile.EMPTY)
+                        {
+                            status = enemyPBoard[x, y].hitShip();
+
+                            if (status == HIT)
+                            {
+                                playerTBoard[x, y].hitEm();
+                            }
+                            else if (status == MISS)
+                            {
+                                playerTBoard[x, y].missEm();
+                            }
+
+                            playerturn = false;
+                            enemyturntimer = 200;
+                        }
+                    }
+
+                    if (enemyShips[0].isSunk() && enemyShips[1].isSunk() &&
+                    enemyShips[2].isSunk() && enemyShips[3].isSunk() &&
+                    enemyShips[4].isSunk())
+                    {
+                        gameover = true;
+                        victory = true;
+                    }
+                }
+                else if (Mouse.GetState().LeftButton != ButtonState.Pressed)
+                {
+                    clicked = false;
+                }
+
+                if (enemyturntimer > 0) enemyturntimer -= gameTime.ElapsedGameTime.Milliseconds;
+                if (enemyturntimer < 0) { enemyturntimer = 0; playerturn = true; }
+            }
+
+            if (!clicked)
+            {
+                if (Mouse.GetState().LeftButton == ButtonState.Pressed)
+                {
+                    if (current_state == INTRO_STATE && Mouse.GetState().X < 260 && Mouse.GetState().Y < 50)
+                    {
+                        current_state = PLACEMENT_STATE;
+                        visuals.gotoState(PLACEMENT_STATE);
+                    }
+                    else if (current_state == PLACEMENT_STATE && Mouse.GetState().X < 260 && Mouse.GetState().Y > 540 && placement_done)
+                    {
+                        current_state = GAME_STATE;
+                        visuals.gotoState(GAME_STATE);
+                    }
+                    else if (current_state == GAME_STATE && gameover)
+                    {
+                        current_state = END_STATE;
+                        visuals.gotoState(END_STATE);
+                    }
+
+                    clicked = true;
+                }
+            }
+            else if (Mouse.GetState().LeftButton != ButtonState.Pressed)
+            {
+                clicked = false;
+            }
+
+            visuals.update(gameTime.ElapsedGameTime.Milliseconds, playerTBoard, playerPBoard, playerShips);
+
             base.Update(gameTime);
         }
 
@@ -310,10 +521,10 @@ namespace Battle_Ship_474
         /// <param name="gameTime">Provides a snapshot of timing values.</param>
         protected override void Draw(GameTime gameTime)
         {
-            GraphicsDevice.Clear(Color.CornflowerBlue);
+            GraphicsDevice.Clear(Color.Black);
 
             // TODO: Add your drawing code here
-
+            /*
             spriteBatch.Begin();
             spriteBatch.DrawString(font, testString, pos, Color.OrangeRed);
 
@@ -327,6 +538,58 @@ namespace Battle_Ship_474
 
             spriteBatch.DrawString(font, XString, new Vector2(60, 35), Color.BurlyWood);
             spriteBatch.DrawString(font, YString, new Vector2(50, 35), Color.BurlyWood);
+                            
+            spriteBatch.End();*/
+
+            RasterizerState rs = new RasterizerState();
+            rs.CullMode = CullMode.CullCounterClockwiseFace;
+            GraphicsDevice.RasterizerState = rs;
+            GraphicsDevice.BlendState = BlendState.AlphaBlend;
+            GraphicsDevice.DepthStencilState = DepthStencilState.Default;
+            visuals.Draw(graphics, spriteBatch);
+
+
+            spriteBatch.Begin();
+            if (current_state == INTRO_STATE)
+                spriteBatch.DrawString(font, "Click here to start", new Vector2(10, 10), Mouse.GetState().X < 260 && Mouse.GetState().Y < 50 ? Color.White : Color.Gray);
+            if (current_state == PLACEMENT_STATE && placement_done)
+                spriteBatch.DrawString(font, "Click here to continue", new Vector2(10, 550), Mouse.GetState().X < 260 && Mouse.GetState().Y > 540 ? Color.White : Color.Gray);
+            if (current_state == END_STATE && victory)
+                spriteBatch.DrawString(ffont, "You won!", new Vector2(450, 200), Color.LimeGreen);
+            if (current_state == END_STATE && !victory)
+                spriteBatch.DrawString(ffont, "You lost...", new Vector2(420, 200), Color.Red);
+
+            spriteBatch.DrawString(font, Mouse.GetState().X + " " + Mouse.GetState().Y, Vector2.Zero, Color.Red);
+
+            if (current_state == GAME_STATE)
+                spriteBatch.DrawString(ffont, playerturn ? "Your turn" : "Enemy's turn", new Vector2(10, 10), playerturn ? Color.LimeGreen : Color.Red);
+            if (current_state == PLACEMENT_STATE)
+                spriteBatch.DrawString(ffont, "Place your ships!", new Vector2(10, 10), Color.LimeGreen);
+
+            if (current_state == PLACEMENT_STATE)
+            {
+                spriteBatch.DrawString(font, "Patrol Boat", new Vector2(10, 60), pPatrolShip.getStartX() == -1 ? Color.Green : Color.LimeGreen);
+                spriteBatch.DrawString(font, "Submarine", new Vector2(10, 90), pSubShip.getStartX() == -1 ? Color.Green : Color.LimeGreen);
+                spriteBatch.DrawString(font, "Destroyer", new Vector2(10, 120), pDestroyerShip.getStartX() == -1 ? Color.Green : Color.LimeGreen);
+                spriteBatch.DrawString(font, "Battleship", new Vector2(10, 150), pBattleShip.getStartX() == -1 ? Color.Green : Color.LimeGreen);
+                spriteBatch.DrawString(font, "Aircraft Carrier", new Vector2(10, 180), pCarrierShip.getStartX() == -1 ? Color.Green : Color.LimeGreen);
+            }
+            if (current_state == GAME_STATE)
+            {
+                spriteBatch.DrawString(font, "Patrol Boat", new Vector2(10, 60), pPatrolShip.isSunk() ? Color.Green : Color.LimeGreen);
+                spriteBatch.DrawString(font, "Submarine", new Vector2(10, 90), pSubShip.isSunk() ? Color.Green : Color.LimeGreen);
+                spriteBatch.DrawString(font, "Destroyer", new Vector2(10, 120), pDestroyerShip.isSunk() ? Color.Green : Color.LimeGreen);
+                spriteBatch.DrawString(font, "Battleship", new Vector2(10, 150), pBattleShip.isSunk() ? Color.Green : Color.LimeGreen);
+                spriteBatch.DrawString(font, "Aircraft Carrier", new Vector2(10, 180), pCarrierShip.isSunk() ? Color.Green : Color.LimeGreen);
+
+                spriteBatch.DrawString(font, "Patrol Boat", new Vector2(800, 60), enemyShips[0].isSunk() ? Color.DarkRed : Color.Red);
+                spriteBatch.DrawString(font, "Submarine", new Vector2(800, 90), enemyShips[2].isSunk() ? Color.DarkRed : Color.Red);
+                spriteBatch.DrawString(font, "Destroyer", new Vector2(800, 120), enemyShips[1].isSunk() ? Color.DarkRed : Color.Red);
+                spriteBatch.DrawString(font, "Battleship", new Vector2(800, 150), enemyShips[3].isSunk() ? Color.DarkRed : Color.Red);
+                spriteBatch.DrawString(font, "Aircraft Carrier", new Vector2(800, 180), enemyShips[4].isSunk() ? Color.DarkRed : Color.Red);
+                
+            }
+
             spriteBatch.End();
 
             base.Draw(gameTime);
