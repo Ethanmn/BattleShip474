@@ -82,6 +82,7 @@ namespace Battle_Ship_474
         bool playerturn = true;
         float enemyturntimer = 0;
         int currentlyPlacing = 0;
+        Texture2D usedTile, unusedTile;
 
         //AI stuffs
         AI enemy;
@@ -185,7 +186,7 @@ namespace Battle_Ship_474
             enemyPBoard[0, 8].placeShip(eCarrierShip);
             enemyPBoard[0, 9].placeShip(eCarrierShip);
             */
-
+            /*
             playerPBoard[0, 0].placeShip(pPatrolShip);
             playerPBoard[1, 0].placeShip(pPatrolShip);
             pPatrolShip.setStart(0, 0);
@@ -217,10 +218,22 @@ namespace Battle_Ship_474
             playerPBoard[0, 5].placeShip(pCarrierShip);
             pCarrierShip.setStart(0, 1);
             pCarrierShip.setOrientation(Ship.VER);
-
+            */
             testString = enemyShips[0].getSize() + "";
 
             base.Initialize();
+        }
+
+
+        public bool checkPlacement(int x, int y)
+        {
+            if (x >= 10 || y >= 10 || x < 0 || y < 0)
+                return true;
+            if (playerPBoard[x, y].getShip().getName() == "Water")
+            {
+                return false;
+            }
+            return true;
         }
 
         /// <summary>
@@ -233,6 +246,8 @@ namespace Battle_Ship_474
             spriteBatch = new SpriteBatch(GraphicsDevice);
             font = Content.Load<SpriteFont>("SpriteFont1");
             ffont = Content.Load<SpriteFont>("FancyFont");
+            usedTile = Content.Load<Texture2D>("usedTile");
+            unusedTile = Content.Load<Texture2D>("unusedTile");
 
             visuals = new BoardVisuals(this);
         }
@@ -360,15 +375,17 @@ namespace Battle_Ship_474
                 if (pPatrolShip.getStartX() != -1 && pSubShip.getStartX() != -1 && pBattleShip.getStartX() != -1 &&
                     pDestroyerShip.getStartX() != -1 && pCarrierShip.getStartX() != -1)
                     placement_done = true;
+                if (currentlyPlacing == 5)
+                    placement_done = true;
 
-                if (mx > 325 && my > 210 && mx < 670 && my < 535)
+                if (mx > 250 && my > 50 && mx < 750 && my < 550)
                 {
-                    x = (mx - 325) * 10 / (670 - 325);
-                    y = (my - 210) * 10 / (535 - 210);
+                    x = (mx - 250) * 10 / (750 - 250);
+                    y = (my - 50) * 10 / (550 - 50);
                     y = -y + 9;
                 }
 
-                /*bool rotate = false;
+                bool rotate = false;
                 if (x >= 0 && x < 10 && y >= 0 && y < 10)
                 {
                     if ((Mouse.GetState().ScrollWheelValue != pscroll || Mouse.GetState().RightButton == ButtonState.Pressed) && !scrolled)
@@ -380,50 +397,136 @@ namespace Battle_Ship_474
                     if (!(Mouse.GetState().ScrollWheelValue != pscroll || Mouse.GetState().RightButton == ButtonState.Pressed))
                         scrolled = false;
 
-                    if (currentlyPlacing == 0) // patrol boat
+                    if (currentlyPlacing == 0) // patrol ship
                     {
-                        if (pPatrolShip.getOrientation() == Ship.HOR)
-                        {
-                            if (x + pPatrolShip.getSize() < 10)
-                            {
-                                pPatrolShip.setStart(x, y);
-                            }
-                        }
-                        else
-                        {
-                            if (y + pPatrolShip.getSize() < 10)
-                            {
-                                pPatrolShip.setStart(x, y);                                
-                            }
-                        }
+                        if (rotate) pPatrolShip.setOrientation(pPatrolShip.getOrientation() == Ship.HOR ? Ship.VER : Ship.HOR);
+                        
+                        pPatrolShip.setStart(x, y);
 
-                        if (rotate)
-                            pPatrolShip.setOrientation(pPatrolShip.getOrientation() == Ship.HOR ? Ship.VER : Ship.HOR);
-                        if (Mouse.GetState().LeftButton == ButtonState.Pressed && !clicked)
+                        int dx = pPatrolShip.getOrientation() == Ship.HOR ? 1 : 0;
+                        int dy = pPatrolShip.getOrientation() == Ship.VER ? 1 : 0;
+
+                        if (pPatrolShip.getStartX() + dx >= 10 || pPatrolShip.getStartY() + dy >= 10)
+                            pPatrolShip.setStart(-1, -1);
+
+                        if (pPatrolShip.getStartX() != -1 && pPatrolShip.getStartY() != -1 && !clicked && Mouse.GetState().LeftButton == ButtonState.Pressed)
                         {
-                            if (pPatrolShip.getOrientation() == Ship.HOR)
-                            {
-                                if (y + pPatrolShip.getSize() < 10)
-                                {
-                                    currentlyPlacing++;
-                                    clicked = true;
-                                }
-                            }
-                            else
-                            {
-                                if (x + pPatrolShip.getSize() < 10)
-                                {
-                                    currentlyPlacing++;
-                                    clicked = true;
-                                }
-                            }
+                            playerPBoard[pPatrolShip.getStartX(), pPatrolShip.getStartY()].placeShip(pPatrolShip);
+                            playerPBoard[pPatrolShip.getStartX() + dx, pPatrolShip.getStartY() + dy].placeShip(pPatrolShip);
+                            currentlyPlacing++;
+                            clicked = true;
                         }
                     }
-                    else if (currentlyPlacing == 1) // Sub
+                    else if (currentlyPlacing == 1) // submarine
                     {
+                        if (rotate) pSubShip.setOrientation(pSubShip.getOrientation() == Ship.HOR ? Ship.VER : Ship.HOR);
 
+                        pSubShip.setStart(x, y);
+
+                        int dx = pSubShip.getOrientation() == Ship.HOR ? 1 : 0;
+                        int dy = pSubShip.getOrientation() == Ship.VER ? 1 : 0;
+
+                        if (checkPlacement(pSubShip.getStartX(), pSubShip.getStartY()))
+                            pSubShip.setStart(-1, -1);
+                        if (pSubShip.getStartX() + dx >= 10 || pSubShip.getStartY() + dy >= 10 || checkPlacement(pSubShip.getStartX() + dx, pSubShip.getStartY() + dy))
+                            pSubShip.setStart(-1, -1);
+                        if (pSubShip.getStartX() + dx * 2 >= 10 || pSubShip.getStartY() + dy * 2 >= 10 || checkPlacement(pSubShip.getStartX() + dx * 2, pSubShip.getStartY() + dy * 2))
+                            pSubShip.setStart(-1, -1);
+
+                        if (pSubShip.getStartX() != -1 && pSubShip.getStartY() != -1 && !clicked && Mouse.GetState().LeftButton == ButtonState.Pressed)
+                        {
+                            playerPBoard[pSubShip.getStartX(), pSubShip.getStartY()].placeShip(pSubShip);
+                            playerPBoard[pSubShip.getStartX() + dx, pSubShip.getStartY() + dy].placeShip(pSubShip);
+                            playerPBoard[pSubShip.getStartX() + dx * 2, pSubShip.getStartY() + dy * 2].placeShip(pSubShip);
+                            currentlyPlacing++;
+                            clicked = true;
+                        }
                     }
-                }*/
+                    else if (currentlyPlacing == 2) // destroyer
+                    {
+                        if (rotate) pDestroyerShip.setOrientation(pDestroyerShip.getOrientation() == Ship.HOR ? Ship.VER : Ship.HOR);
+
+                        pDestroyerShip.setStart(x, y);
+
+                        int dx = pDestroyerShip.getOrientation() == Ship.HOR ? 1 : 0;
+                        int dy = pDestroyerShip.getOrientation() == Ship.VER ? 1 : 0;
+
+                        if (checkPlacement(pDestroyerShip.getStartX(), pDestroyerShip.getStartY()))
+                            pDestroyerShip.setStart(-1, -1);
+                        if (pDestroyerShip.getStartX() + dx >= 10 || pDestroyerShip.getStartY() + dy >= 10 || checkPlacement(pDestroyerShip.getStartX() + dx, pDestroyerShip.getStartY() + dy))
+                            pDestroyerShip.setStart(-1, -1);
+                        if (pDestroyerShip.getStartX() + dx * 2 >= 10 || pDestroyerShip.getStartY() + dy * 2 >= 10 || checkPlacement(pDestroyerShip.getStartX() + dx * 2, pDestroyerShip.getStartY() + dy * 2))
+                            pDestroyerShip.setStart(-1, -1);
+
+                        if (pDestroyerShip.getStartX() != -1 && pDestroyerShip.getStartY() != -1 && !clicked && Mouse.GetState().LeftButton == ButtonState.Pressed)
+                        {
+                            playerPBoard[pDestroyerShip.getStartX(), pDestroyerShip.getStartY()].placeShip(pDestroyerShip);
+                            playerPBoard[pDestroyerShip.getStartX() + dx, pDestroyerShip.getStartY() + dy].placeShip(pDestroyerShip);
+                            playerPBoard[pDestroyerShip.getStartX() + dx * 2, pDestroyerShip.getStartY() + dy * 2].placeShip(pDestroyerShip);
+                            currentlyPlacing++;
+                            clicked = true;
+                        }
+                    }
+                    else if (currentlyPlacing == 3) // battleship
+                    {
+                        if (rotate) pBattleShip.setOrientation(pBattleShip.getOrientation() == Ship.HOR ? Ship.VER : Ship.HOR);
+
+                        pBattleShip.setStart(x, y);
+
+                        int dx = pBattleShip.getOrientation() == Ship.HOR ? 1 : 0;
+                        int dy = pBattleShip.getOrientation() == Ship.VER ? 1 : 0;
+
+                        if (checkPlacement(pBattleShip.getStartX(), pBattleShip.getStartY()))
+                            pBattleShip.setStart(-1, -1);
+                        if (pBattleShip.getStartX() + dx >= 10 || pBattleShip.getStartY() + dy >= 10 || checkPlacement(pBattleShip.getStartX() + dx, pBattleShip.getStartY() + dy))
+                            pBattleShip.setStart(-1, -1);
+                        if (pBattleShip.getStartX() + dx * 2 >= 10 || pBattleShip.getStartY() + dy * 2 >= 10 || checkPlacement(pBattleShip.getStartX() + dx * 2, pBattleShip.getStartY() + dy * 2))
+                            pBattleShip.setStart(-1, -1);
+                        if (pBattleShip.getStartX() + dx * 3 >= 10 || pBattleShip.getStartY() + dy * 3 >= 10 || checkPlacement(pBattleShip.getStartX() + dx * 3, pBattleShip.getStartY() + dy * 3))
+                            pBattleShip.setStart(-1, -1);
+
+                        if (pBattleShip.getStartX() != -1 && pBattleShip.getStartY() != -1 && !clicked && Mouse.GetState().LeftButton == ButtonState.Pressed)
+                        {
+                            playerPBoard[pBattleShip.getStartX(), pBattleShip.getStartY()].placeShip(pBattleShip);
+                            playerPBoard[pBattleShip.getStartX() + dx, pBattleShip.getStartY() + dy].placeShip(pBattleShip);
+                            playerPBoard[pBattleShip.getStartX() + dx * 2, pBattleShip.getStartY() + dy * 2].placeShip(pBattleShip);
+                            playerPBoard[pBattleShip.getStartX() + dx * 3, pBattleShip.getStartY() + dy * 3].placeShip(pBattleShip);
+                            currentlyPlacing++;
+                            clicked = true;
+                        }
+                    }
+                    else if (currentlyPlacing == 4) // carrier
+                    {
+                        if (rotate) pCarrierShip.setOrientation(pCarrierShip.getOrientation() == Ship.HOR ? Ship.VER : Ship.HOR);
+
+                        pCarrierShip.setStart(x, y);
+
+                        int dx = pCarrierShip.getOrientation() == Ship.HOR ? 1 : 0;
+                        int dy = pCarrierShip.getOrientation() == Ship.VER ? 1 : 0;
+
+                        if (checkPlacement(pCarrierShip.getStartX(), pCarrierShip.getStartY()))
+                            pCarrierShip.setStart(-1, -1);
+                        if (pCarrierShip.getStartX() + dx >= 10 || pCarrierShip.getStartY() + dy >= 10 || checkPlacement(pCarrierShip.getStartX() + dx, pCarrierShip.getStartY() + dy))
+                            pCarrierShip.setStart(-1, -1);
+                        if (pCarrierShip.getStartX() + dx * 2 >= 10 || pCarrierShip.getStartY() + dy * 2 >= 10 || checkPlacement(pCarrierShip.getStartX() + dx * 2, pCarrierShip.getStartY() + dy * 2))
+                            pCarrierShip.setStart(-1, -1);
+                        if (pCarrierShip.getStartX() + dx * 3 >= 10 || pCarrierShip.getStartY() + dy * 3 >= 10 || checkPlacement(pCarrierShip.getStartX() + dx * 3, pCarrierShip.getStartY() + dy * 3))
+                            pCarrierShip.setStart(-1, -1);
+                        if (pCarrierShip.getStartX() + dx * 4 >= 10 || pCarrierShip.getStartY() + dy * 4 >= 10 || checkPlacement(pCarrierShip.getStartX() + dx * 4, pCarrierShip.getStartY() + dy * 4))
+                            pCarrierShip.setStart(-1, -1);
+
+                        if (pCarrierShip.getStartX() != -1 && pCarrierShip.getStartY() != -1 && !clicked && Mouse.GetState().LeftButton == ButtonState.Pressed)
+                        {
+                            playerPBoard[pCarrierShip.getStartX(), pCarrierShip.getStartY()].placeShip(pCarrierShip);
+                            playerPBoard[pCarrierShip.getStartX() + dx, pCarrierShip.getStartY() + dy].placeShip(pCarrierShip);
+                            playerPBoard[pCarrierShip.getStartX() + dx * 2, pCarrierShip.getStartY() + dy * 2].placeShip(pCarrierShip);
+                            playerPBoard[pCarrierShip.getStartX() + dx * 3, pCarrierShip.getStartY() + dy * 3].placeShip(pCarrierShip);
+                            playerPBoard[pCarrierShip.getStartX() + dx * 4, pCarrierShip.getStartY() + dy * 4].placeShip(pCarrierShip);
+                            currentlyPlacing++;
+                            clicked = true;
+                        }
+                    }
+                }
 
             }
 
@@ -559,7 +662,7 @@ namespace Battle_Ship_474
             if (current_state == END_STATE && !victory)
                 spriteBatch.DrawString(ffont, "You lost...", new Vector2(420, 200), Color.Red);
 
-            spriteBatch.DrawString(font, Mouse.GetState().X + " " + Mouse.GetState().Y, Vector2.Zero, Color.Red);
+            //spriteBatch.DrawString(font, Mouse.GetState().X + " " + Mouse.GetState().Y, Vector2.Zero, Color.Red);
 
             if (current_state == GAME_STATE)
                 spriteBatch.DrawString(ffont, playerturn ? "Your turn" : "Enemy's turn", new Vector2(10, 10), playerturn ? Color.LimeGreen : Color.Red);
@@ -573,6 +676,70 @@ namespace Battle_Ship_474
                 spriteBatch.DrawString(font, "Destroyer", new Vector2(10, 120), pDestroyerShip.getStartX() == -1 ? Color.Green : Color.LimeGreen);
                 spriteBatch.DrawString(font, "Battleship", new Vector2(10, 150), pBattleShip.getStartX() == -1 ? Color.Green : Color.LimeGreen);
                 spriteBatch.DrawString(font, "Aircraft Carrier", new Vector2(10, 180), pCarrierShip.getStartX() == -1 ? Color.Green : Color.LimeGreen);
+
+                for (int i = 0; i < 10; i++)
+                {
+                    for (int j = 0; j < 10; j++)
+                    {
+                        if (playerPBoard[i, j].getShip().getName() == "Water")
+                        {
+                            bool placing = false;
+                            if (currentlyPlacing == 0 && pPatrolShip.getStartX() != -1 && pPatrolShip.getStartY() != -1)
+                            {
+                                int dx = pPatrolShip.getOrientation() == Ship.HOR ? 1 : 0;
+                                int dy = pPatrolShip.getOrientation() == Ship.VER ? 1 : 0;
+
+                                if (pPatrolShip.getStartX() == i && pPatrolShip.getStartY() == j) placing = true;
+                                if (pPatrolShip.getStartX() + dx == i && pPatrolShip.getStartY() + dy == j) placing = true;
+                            }
+                            if (currentlyPlacing == 1 && pSubShip.getStartX() != -1 && pSubShip.getStartY() != -1)
+                            {
+                                int dx = pSubShip.getOrientation() == Ship.HOR ? 1 : 0;
+                                int dy = pSubShip.getOrientation() == Ship.VER ? 1 : 0;
+
+                                if (pSubShip.getStartX() == i && pSubShip.getStartY() == j) placing = true;
+                                if (pSubShip.getStartX() + dx == i && pSubShip.getStartY() + dy == j) placing = true;
+                                if (pSubShip.getStartX() + dx * 2 == i && pSubShip.getStartY() + dy * 2 == j) placing = true;
+                            }
+                            if (currentlyPlacing == 2 && pDestroyerShip.getStartX() != -1 && pDestroyerShip.getStartY() != -1)
+                            {
+                                int dx = pDestroyerShip.getOrientation() == Ship.HOR ? 1 : 0;
+                                int dy = pDestroyerShip.getOrientation() == Ship.VER ? 1 : 0;
+
+                                if (pDestroyerShip.getStartX() == i && pDestroyerShip.getStartY() == j) placing = true;
+                                if (pDestroyerShip.getStartX() + dx == i && pDestroyerShip.getStartY() + dy == j) placing = true;
+                                if (pDestroyerShip.getStartX() + dx * 2 == i && pDestroyerShip.getStartY() + dy * 2 == j) placing = true;
+                            }
+                            if (currentlyPlacing == 3 && pBattleShip.getStartX() != -1 && pBattleShip.getStartY() != -1)
+                            {
+                                int dx = pBattleShip.getOrientation() == Ship.HOR ? 1 : 0;
+                                int dy = pBattleShip.getOrientation() == Ship.VER ? 1 : 0;
+
+                                if (pBattleShip.getStartX() == i && pBattleShip.getStartY() == j) placing = true;
+                                if (pBattleShip.getStartX() + dx == i && pBattleShip.getStartY() + dy == j) placing = true;
+                                if (pBattleShip.getStartX() + dx * 2 == i && pBattleShip.getStartY() + dy * 2 == j) placing = true;
+                                if (pBattleShip.getStartX() + dx * 3 == i && pBattleShip.getStartY() + dy * 3 == j) placing = true;
+                            }
+                            if (currentlyPlacing == 4 && pCarrierShip.getStartX() != -1 && pCarrierShip.getStartY() != -1)
+                            {
+                                int dx = pCarrierShip.getOrientation() == Ship.HOR ? 1 : 0;
+                                int dy = pCarrierShip.getOrientation() == Ship.VER ? 1 : 0;
+
+                                if (pCarrierShip.getStartX() == i && pCarrierShip.getStartY() == j) placing = true;
+                                if (pCarrierShip.getStartX() + dx == i && pCarrierShip.getStartY() + dy == j) placing = true;
+                                if (pCarrierShip.getStartX() + dx * 2 == i && pCarrierShip.getStartY() + dy * 2 == j) placing = true;
+                                if (pCarrierShip.getStartX() + dx * 3 == i && pCarrierShip.getStartY() + dy * 3 == j) placing = true;
+                                if (pCarrierShip.getStartX() + dx * 4 == i && pCarrierShip.getStartY() + dy * 4 == j) placing = true;
+                            }
+                            spriteBatch.Draw(unusedTile, new Vector2(250 + i * 50, 500 - j * 50), placing? new Color(1f, 1f, 0.5f, 0.8f) : new Color(0.6f, 0.6f, 0.6f, 0.5f));
+                            
+                        }
+                        else
+                        {
+                            spriteBatch.Draw(usedTile, new Vector2(250 + i * 50, 500 - j * 50), new Color(0.6f, 0.6f, 0.6f, 0.5f));
+                        }
+                    }
+                }
             }
             if (current_state == GAME_STATE)
             {

@@ -234,130 +234,9 @@ namespace Battle_Ship_474
                     }
                     mesh.Draw();
                 }
-
-                /*if (playerships != null)
-                {
-                    foreach (Ship ship in playerships)
-                    {
-                        float SCALE = 0.12f;
-                        float xs = -0.45f, dx = 0.09f, ys = -0.75f, dy = 0.11f, z = -2.5f;
-
-                        int sx = ship.getStartX();
-                        int sy = ship.getStartY();
-                        if (ship.getOrientation() == Ship.HOR) sx -= 1;
-                        if (ship.getName() == "Patrol Boat" && (sx != -1 || sy != -1))
-                        {
-                            shipEffect.World = Matrix.Identity;
-                            shipEffect.View = view;
-                            shipEffect.Projection = projection;
-
-                            Matrix[] shiptransforms = new Matrix[sship.Bones.Count];
-                            sship.CopyAbsoluteBoneTransformsTo(shiptransforms);
-                            Matrix xform = Matrix.CreateScale(SCALE) * (Matrix.CreateRotationY(ship.getOrientation() == Ship.HOR ? (float)Math.PI / -2f : 0)) *
-                                Matrix.CreateRotationX((float)Math.PI / 2) * Matrix.CreateTranslation(xs + sx * dx, ys + sy * dy, z);
-
-                            foreach (ModelMesh mesh in sship.Meshes)
-                            {
-                                foreach (BasicEffect e in mesh.Effects)
-                                {
-                                    copyEffect(e, shipEffect, xform);
-                                    e.World = shiptransforms[mesh.ParentBone.Index] * xform;
-                                    e.View = view;
-                                    e.Projection = projection;
-                                }
-                                mesh.Draw();
-                            }
-                        }
-                        /*else if (ship.getName() == "Destroyer" && sx != -1 && sy != -1)
-                        {
-                            shipEffect.World = Matrix.Identity;
-                            shipEffect.View = view;
-                            shipEffect.Projection = projection;
-
-                            Matrix[] shiptransforms = new Matrix[mship.Bones.Count];
-                            mship.CopyAbsoluteBoneTransformsTo(shiptransforms);
-                            Matrix xform = Matrix.CreateScale(SCALE) * (Matrix.CreateRotationY(ship.getOrientation() == Ship.HOR ? (float)Math.PI / -2f : 0)) * Matrix.CreateTranslation(xs + sy * dx, y, zs + sx * dz);
-
-                            foreach (ModelMesh mesh in mship.Meshes)
-                            {
-                                foreach (BasicEffect e in mesh.Effects)
-                                {
-                                    copyEffect(e, shipEffect, xform);
-                                    e.World = shiptransforms[mesh.ParentBone.Index] * xform;
-                                    e.View = view;
-                                    e.Projection = projection;
-                                }
-                                mesh.Draw();
-                            }
-                        }
-                        else if (ship.getName() == "Submarine" && sx != -1 && sy != -1)
-                        {
-                            shipEffect.World = Matrix.Identity;
-                            shipEffect.View = view;
-                            shipEffect.Projection = projection;
-
-                            Matrix[] shiptransforms = new Matrix[sub.Bones.Count];
-                            sub.CopyAbsoluteBoneTransformsTo(shiptransforms);
-                            Matrix xform = Matrix.CreateScale(SCALE) * (Matrix.CreateRotationY(ship.getOrientation() == Ship.HOR ? (float)Math.PI / -2f : 0)) * Matrix.CreateTranslation(xs + sy * dx, y, zs + sx * dz);
-
-                            foreach (ModelMesh mesh in sub.Meshes)
-                            {
-                                foreach (BasicEffect e in mesh.Effects)
-                                {
-                                    copyEffect(e, shipEffect, xform);
-                                    e.World = shiptransforms[mesh.ParentBone.Index] * xform;
-                                    e.View = view;
-                                    e.Projection = projection;
-                                }
-                                mesh.Draw();
-                            }
-                        }
-                        else if (ship.getName() == "Battleship" && sx != -1 && sy != -1)
-                        {
-                            shipEffect.World = Matrix.Identity;
-                            shipEffect.View = view;
-                            shipEffect.Projection = projection;
-
-                            Matrix[] shiptransforms = new Matrix[lship.Bones.Count];
-                            lship.CopyAbsoluteBoneTransformsTo(shiptransforms);
-                            Matrix xform = Matrix.CreateScale(SCALE) * (Matrix.CreateRotationY(ship.getOrientation() == Ship.HOR ? (float)Math.PI / -2f : 0)) * Matrix.CreateTranslation(xs + sy * dx, y, zs + sx * dz);
-
-                            foreach (ModelMesh mesh in lship.Meshes)
-                            {
-                                foreach (BasicEffect e in mesh.Effects)
-                                {
-                                    copyEffect(e, shipEffect, xform);
-                                    e.World = shiptransforms[mesh.ParentBone.Index] * xform;
-                                    e.View = view;
-                                    e.Projection = projection;
-                                }
-                                mesh.Draw();
-                            }
-                        }
-                        else if (ship.getName() == "Aircraft Carrier" && sx != -1 && sy != -1)
-                        {
-                            shipEffect.World = Matrix.Identity;
-                            shipEffect.View = view;
-                            shipEffect.Projection = projection;
-
-                            Matrix[] shiptransforms = new Matrix[carrier.Bones.Count];
-                            carrier.CopyAbsoluteBoneTransformsTo(shiptransforms);
-                            Matrix xform = Matrix.CreateScale(SCALE) * (Matrix.CreateRotationY(ship.getOrientation() == Ship.HOR ? (float)Math.PI / -2f : 0)) * Matrix.CreateTranslation(xs + sy * dx, y, zs + sx * dz);
-
-                            foreach (ModelMesh mesh in carrier.Meshes)
-                            {
-                                foreach (BasicEffect e in mesh.Effects)
-                                {
-                                    copyEffect(e, shipEffect, xform);
-                                    e.World = shiptransforms[mesh.ParentBone.Index] * xform;
-                                    e.View = view;
-                                    e.Projection = projection;
-                                }
-                                mesh.Draw();
-                            }
-                        }
-                    }
-                }*/
+                batch.Begin();
+                batch.Draw(fader, Vector2.Zero, new Color(1, 1, 1, 0.5f));
+                batch.End();
             }
             else if (internalState == Game1.GAME_STATE || internalState == Game1.END_STATE)
             {
@@ -396,11 +275,11 @@ namespace Battle_Ship_474
                     foreach (Ship ship in playerships)
                     {
                         float SCALE = 0.12f;
-                        float xs = -0.58f, dx = 0.11f, zs = -1.8f, dz = -0.15f, y = -0.55f; 
+                        float xs = -0.55f, dx = 0.14f, zs = -1.8f, dz = -0.105f, y = -0.55f; 
 
                         int sx = ship.getStartX();
                         int sy = ship.getStartY();
-                        if (ship.getOrientation() == Ship.HOR) sy -= 1;
+                        if (ship.getOrientation() == Ship.HOR) sx -= 1;
                         if (ship.getName() == "Patrol Boat")
                         {
                             shipEffect.World = Matrix.Identity;
@@ -409,7 +288,7 @@ namespace Battle_Ship_474
 
                             Matrix[] shiptransforms = new Matrix[sship.Bones.Count];
                             sship.CopyAbsoluteBoneTransformsTo(shiptransforms);
-                            Matrix xform = Matrix.CreateScale(SCALE) * (Matrix.CreateRotationY(ship.getOrientation() == Ship.HOR ? (float)Math.PI / -2f : 0)) * Matrix.CreateTranslation(xs + sy * dx, y, zs + sx * dz);
+                            Matrix xform = Matrix.CreateScale(SCALE) * (Matrix.CreateRotationY(ship.getOrientation() == Ship.HOR ? (float)Math.PI / -2f : 0)) * Matrix.CreateTranslation(xs + sx * dx, y, zs + sy * dz);
 
                             foreach (ModelMesh mesh in sship.Meshes)
                             {
@@ -431,7 +310,7 @@ namespace Battle_Ship_474
 
                             Matrix[] shiptransforms = new Matrix[mship.Bones.Count];
                             mship.CopyAbsoluteBoneTransformsTo(shiptransforms);
-                            Matrix xform = Matrix.CreateScale(SCALE) * (Matrix.CreateRotationY(ship.getOrientation() == Ship.HOR ? (float)Math.PI / -2f : 0)) * Matrix.CreateTranslation(xs + sy * dx, y, zs + sx * dz);
+                            Matrix xform = Matrix.CreateScale(SCALE) * (Matrix.CreateRotationY(ship.getOrientation() == Ship.HOR ? (float)Math.PI / -2f : 0)) * Matrix.CreateTranslation(xs + sx * dx, y, zs + sy * dz);
 
                             foreach (ModelMesh mesh in mship.Meshes)
                             {
@@ -453,7 +332,7 @@ namespace Battle_Ship_474
 
                             Matrix[] shiptransforms = new Matrix[sub.Bones.Count];
                             sub.CopyAbsoluteBoneTransformsTo(shiptransforms);
-                            Matrix xform = Matrix.CreateScale(SCALE) * (Matrix.CreateRotationY(ship.getOrientation() == Ship.HOR? (float)Math.PI / -2f : 0)) * Matrix.CreateTranslation(xs + sy * dx, y, zs + sx * dz);
+                            Matrix xform = Matrix.CreateScale(SCALE) * (Matrix.CreateRotationY(ship.getOrientation() == Ship.HOR? (float)Math.PI / -2f : 0)) * Matrix.CreateTranslation(xs + sx * dx, y, zs + sy * dz);
 
                             foreach (ModelMesh mesh in sub.Meshes)
                             {
@@ -475,7 +354,7 @@ namespace Battle_Ship_474
 
                             Matrix[] shiptransforms = new Matrix[lship.Bones.Count];
                             lship.CopyAbsoluteBoneTransformsTo(shiptransforms);
-                            Matrix xform = Matrix.CreateScale(SCALE) * (Matrix.CreateRotationY(ship.getOrientation() == Ship.HOR ? (float)Math.PI / -2f : 0)) * Matrix.CreateTranslation(xs + sy * dx, y, zs + sx * dz);
+                            Matrix xform = Matrix.CreateScale(SCALE) * (Matrix.CreateRotationY(ship.getOrientation() == Ship.HOR ? (float)Math.PI / -2f : 0)) * Matrix.CreateTranslation(xs + sx * dx, y, zs + sy * dz);
 
                             foreach (ModelMesh mesh in lship.Meshes)
                             {
@@ -497,7 +376,7 @@ namespace Battle_Ship_474
 
                             Matrix[] shiptransforms = new Matrix[carrier.Bones.Count];
                             carrier.CopyAbsoluteBoneTransformsTo(shiptransforms);
-                            Matrix xform = Matrix.CreateScale(SCALE) * (Matrix.CreateRotationY(ship.getOrientation() == Ship.HOR ? (float)Math.PI / -2f : 0)) * Matrix.CreateTranslation(xs + sy * dx, y, zs + sx * dz);
+                            Matrix xform = Matrix.CreateScale(SCALE) * (Matrix.CreateRotationY(ship.getOrientation() == Ship.HOR ? (float)Math.PI / -2f : 0)) * Matrix.CreateTranslation(xs + sx * dx, y, zs + sy * dz);
 
                             foreach (ModelMesh mesh in carrier.Meshes)
                             {
@@ -557,7 +436,6 @@ namespace Battle_Ship_474
                 if (internalState == Game1.END_STATE)
                 {
                     batch.Begin();
-
                     batch.Draw(fader, Vector2.Zero, new Color(1, 1, 1, 0.8f));
                     batch.End();
                 }
