@@ -565,6 +565,7 @@ namespace Battle_Ship_474
 
                             playerturn = false;
                             enemyturntimer = 200;
+
                         }
                     }
 
