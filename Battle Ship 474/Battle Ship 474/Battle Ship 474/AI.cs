@@ -14,6 +14,11 @@ namespace Battle_Ship_474
 {
     class AI
     {
+        public static int EMPTY = -1;
+        static int MISS = 0;
+        static int HIT = 1;
+        static int ALREADY_HIT = 2;
+
         Tile[,] playerPBoard;
         Tile[,] enemyPBoard;
         TrackTile[,] enemyTBoard;
@@ -50,11 +55,11 @@ namespace Battle_Ship_474
 
             if (XY == 0)
             {
-                randX = RNG.Next(0, 5);
+                randX = RNG.Next(0, 10 - shipSize);
                 randY = RNG.Next(0, 10);
                 while (!go)
                 {
-                    randX = RNG.Next(0, 5);
+                    randX = RNG.Next(0, 10 - shipSize);
                     randY = RNG.Next(0, 10);
 
                     int j = 0;
@@ -76,11 +81,11 @@ namespace Battle_Ship_474
             else
             {
                 randX = RNG.Next(0, 10);
-                randY = RNG.Next(0, 5);
+                randY = RNG.Next(0, 10 - shipSize);
                 while (!go)
                 {
                     randX = RNG.Next(0, 10);
-                    randY = RNG.Next(0, 5);
+                    randY = RNG.Next(0, 10 - shipSize);
 
                     int j = 0;
                     while (this.enemyPBoard[randX, randY + j].getShip().getSize() == 0 && j < shipSize)
@@ -115,7 +120,44 @@ namespace Battle_Ship_474
 
         public int attack()
         {
-            return 0;
+            int randX, randY, hitResult;
+            Random RNG = new Random();
+
+            if (hitLast)
+            {
+                randX = RNG.Next(0, 10);
+                randY = RNG.Next(0, 10);
+
+                while (enemyTBoard[randX, randY].getStatus() != EMPTY)
+                {
+                    randX = RNG.Next(0, 10);
+                    randY = RNG.Next(0, 10);
+                }
+
+                hitResult = playerPBoard[randX, randY].hitShip();
+                enemyTBoard[randX, randY].setStatus(hitResult);
+            }
+            else
+            {
+                randX = RNG.Next(0, 10);
+                randY = RNG.Next(0, 10);
+
+                while (enemyTBoard[randX, randY].getStatus() != EMPTY)
+                {
+                    randX = RNG.Next(0, 10);
+                    randY = RNG.Next(0, 10);
+                }
+
+                hitResult = playerPBoard[randX, randY].hitShip();
+                enemyTBoard[randX, randY].setStatus(hitResult);
+            }
+
+            if (hitResult == HIT)
+            {
+                lastXHit = randX;
+                lastYHit = randY;
+            }
+            return hitResult;
         }
     }
 }
