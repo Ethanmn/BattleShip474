@@ -22,6 +22,8 @@ namespace Battle_Ship_474
     /// </summary>
     public class Game1 : Microsoft.Xna.Framework.Game
     {
+        const int NUM_SHIPS = 5;
+
         const int NUM = 8;
         const int SIZE = 10;
 
@@ -55,6 +57,9 @@ namespace Battle_Ship_474
         TrackTile[,] enemyTBoard;
 
         //Ship Stuffs
+        Ship[] playerShips;
+        Ship[] enemyShips;
+
         Ship pPatrolShip;
         Ship pDestroyerShip;
         Ship pSubShip;
@@ -66,6 +71,9 @@ namespace Battle_Ship_474
         Ship eSubShip;
         Ship eBattleShip;
         Ship eCarrierShip;
+
+        //AI stuffs
+        AI enemy;
 
         public Game1()
         {
@@ -91,17 +99,30 @@ namespace Battle_Ship_474
             enemyPBoard = new Tile[SIZE, SIZE];
             enemyTBoard = new TrackTile[SIZE, SIZE];
 
+            playerShips = new Ship[NUM_SHIPS];
+            enemyShips = new Ship[NUM_SHIPS];
+
             pPatrolShip = new Ship("Patrol Boat");
+            playerShips[0] = pPatrolShip;
             pDestroyerShip = new Ship("Destroyer");
+            playerShips[1] = pDestroyerShip;
             pSubShip = new Ship("Submarine");
+            playerShips[2] = pSubShip;
             pBattleShip = new Ship("Battleship");
+            playerShips[3] = pBattleShip;
             pCarrierShip = new Ship("Aircraft Carrier");
+            playerShips[4] = pCarrierShip;
 
             ePatrolShip = new Ship("Patrol Boat");
+            enemyShips[0] = new Ship("Patrol Boat");
             eDestroyerShip = new Ship("Destroyer");
+            enemyShips[1] = new Ship("Destroyer");
             eSubShip = new Ship("Submarine");
+            enemyShips[2] = new Ship("Submarine");
             eBattleShip = new Ship("Battleship");
+            enemyShips[3] = new Ship("Battleship");
             eCarrierShip = new Ship("Aircraft Carrier");
+            enemyShips[4] = new Ship("Aircraft Carrier");
 
             for (int i = 0; i < SIZE; i++)
             {
@@ -123,8 +144,11 @@ namespace Battle_Ship_474
                 }
             }
 
-            //Set up a static board
+            enemy = new AI(ref playerPBoard, ref enemyPBoard, ref enemyTBoard, ref enemyShips);
+            enemy.createRandPBoard(NUM_SHIPS);
 
+            //Set up a static board
+            /*
             enemyPBoard[1, 3].placeShip(ePatrolShip);
             enemyPBoard[2, 3].placeShip(ePatrolShip);
             
@@ -146,16 +170,9 @@ namespace Battle_Ship_474
             enemyPBoard[0, 7].placeShip(eCarrierShip);
             enemyPBoard[0, 8].placeShip(eCarrierShip);
             enemyPBoard[0, 9].placeShip(eCarrierShip);
-
-            /* Test things
-            testShip = new Ship("Scooter");
-            testShip2 = new Ship("Falafel");
-            primaryBoard[2, 3].placeShip(testShip);
-            primaryBoard[0, 0].placeShip(testShip);
-            primaryBoard[1, 1].placeShip(testShip2);
             */
 
-            testString = enemyPBoard[2, 3].getShip().getHits() + "Rawr!";
+            testString = enemyShips[0].getSize() + "";
 
             base.Initialize();
         }
@@ -215,6 +232,8 @@ namespace Battle_Ship_474
                 Y = 8;
             if (keyState.IsKeyDown(Keys.J))
                 Y = 9;
+            if (keyState.IsKeyDown(Keys.Z))
+                testString = enemyShips[0].getName();
 
             if (keyState.IsKeyDown(Keys.D0))
                 X = 9;
@@ -271,9 +290,13 @@ namespace Battle_Ship_474
                     testString = "WTF?!";
                 }
 
-                if (ePatrolShip.isSunk() && eBattleShip.isSunk() &&
+                /*if (ePatrolShip.isSunk() && eBattleShip.isSunk() &&
                     eSubShip.isSunk() && eDestroyerShip.isSunk() &&
-                    eCarrierShip.isSunk())
+                    eCarrierShip.isSunk())*/
+
+                if (enemyShips[0].isSunk() && enemyShips[1].isSunk() &&
+                    enemyShips[2].isSunk() && enemyShips[3].isSunk() &&
+                    enemyShips[4].isSunk())
                 {
                     testString = "YOU WIN!";
                 }
