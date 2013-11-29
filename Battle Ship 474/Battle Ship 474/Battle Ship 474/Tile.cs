@@ -14,20 +14,32 @@ namespace Battle_Ship_474
 {   
     class Tile
     {
+        static int MISS = 0;
+        static int HIT = 1;
+        static int ALREADY_HIT = 2;
+
         char letter;
         int number;
+        int X;
+        int Y;
         Ship ship;
 
         public Tile()
         {
             letter = 'Z';
             number = 0;
+            ship = new Ship();
+            this.X = -1;
+            this.Y = -1;
         }
 
         public Tile(char letter, int num)
         {
             this.letter = letter;
             this.number = num;
+            ship = new Ship();
+            this.X = num - 1;
+            this.Y = (int)(letter - 'A');
         }
 
         public char getLetter()
@@ -59,9 +71,32 @@ namespace Battle_Ship_474
 
         public bool placeShip(Ship ship)
         {
-            this.ship = ship;
-            this.ship.addHealth(this.number, (int)this.letter - 'A');
-            return true;
+            //Check if there is already a ship there
+            if (this.ship != null && this.ship.getSize() == 0)
+            {
+                this.ship = ship;
+                this.ship.addHealth(X, Y);
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+        }
+
+        public int hitShip()
+        {
+            if (this.ship != null && this.ship.getSize() == 0)
+            {
+                return MISS;
+            }
+
+            if (this.ship.isSunk())
+            {
+                return ALREADY_HIT;
+            }
+
+            return this.ship.hit(this.X, this.Y);
         }
     }
 }
