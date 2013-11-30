@@ -24,10 +24,12 @@ namespace Battle_Ship_474
         TrackTile[,] enemyTBoard;
         Ship[] enemyShips;
 
-        int lastXHit;
-        int lastYHit;
+        int lastXHit, lastYHit;
+        int HV, UD;
+        int search, direction;
 
         bool hitLast;
+        bool notVU, notVD, notHL, notHR;
 
         Random RNG;
 
@@ -40,8 +42,12 @@ namespace Battle_Ship_474
 
             this.lastXHit = 0;
             this.lastYHit = 0;
+            this.direction = -1;
+            this.search = 1;
 
             this.hitLast = false;
+
+            this.notVU = this.notVD = this.notHL = this.notHR = false;
 
             this.RNG = new Random();
         }
@@ -120,44 +126,223 @@ namespace Battle_Ship_474
 
         public int attack()
         {
-            int randX, randY, hitResult;
+            int X, Y, sX, sY, hitResult, branch;
             Random RNG = new Random();
 
+            
             if (hitLast)
             {
-                randX = RNG.Next(0, 10);
-                randY = RNG.Next(0, 10);
+                if (direction == -1)
+                    direction = RNG.Next(0, 5);
 
-                while (enemyTBoard[randX, randY].getStatus() != EMPTY)
+                X = lastXHit;
+                Y = lastYHit;
+                sX = X;
+                sY = Y;
+
+                if (direction == 0)
                 {
-                    randX = RNG.Next(0, 10);
-                    randY = RNG.Next(0, 10);
+                    branch = 0;
+                    if (Y - search < 0 && enemyTBoard[X, Y - search].getStatus() == EMPTY)
+                    {
+                        sY = Y - search;
+                        sX = X;
+                    }
+                    else
+                    {
+                        search = 1;
+
+                        if (X + 1 < 10 && enemyTBoard[X + 1, Y].getStatus() == EMPTY)
+                        {
+                            sX = X + search;
+                            sY = Y;
+                            direction = 1;
+                        }
+                        else if (X - 1 > 0 && enemyTBoard[X - 1, Y].getStatus() == EMPTY)
+                        {
+                            sX = X - search;
+                            sY = Y;
+                            direction = 3;
+                        }
+                        else if (enemyTBoard[X, Y - 1].getStatus() == EMPTY)
+                        {
+                            sX = X;
+                            sY = Y - search;
+                            direction = 2;
+                        }
+                        else
+                        {
+                            branch = 40;
+
+                            sX = RNG.Next(0, 10);
+                            sY = RNG.Next(0, 10);
+                            hitLast = false;
+                        }
+                    }
                 }
 
-                hitResult = playerPBoard[randX, randY].hitShip();
-                enemyTBoard[randX, randY].setStatus(hitResult);
+                else if (direction == 1)
+                {
+                    branch = 1;
+                    if (X + search > 10 && enemyTBoard[X + search, Y].getStatus() == EMPTY)
+                    {
+                        sX = X + search;
+                        sY = Y;
+                    }
+                    else
+                    {
+                        search = 1;
+
+                        if (Y + 1 < 10 && enemyTBoard[X, Y + 1].getStatus() == EMPTY)
+                        {
+                            sX = lastXHit;
+                            sY = Y + search;
+                            direction = 0;
+                        }
+                        else if (Y - 1 > 0 && enemyTBoard[X, Y - 1].getStatus() == EMPTY)
+                        {
+                            sX = X;
+                            sY = Y - search;
+                            direction = 2;
+                        }
+                        else if (enemyTBoard[X - 1, Y].getStatus() == EMPTY)
+                        {
+                            sX = X - search;
+                            sY = Y;
+                            direction = 3;
+                        }
+                        else
+                        {
+                            branch = 41;
+
+                            sX = RNG.Next(0, 10);
+                            sY = RNG.Next(0, 10);
+                            hitLast = false;
+                        }  
+                    }
+                }
+
+                else if (direction == 2)
+                {
+                    branch = 2;
+                    if (Y + search < 0 && enemyTBoard[X, Y + search].getStatus() == EMPTY)
+                    {
+                        sX = X;
+                        sY = Y + search;
+                    }
+                    else
+                    {
+                        search = 1;
+
+                        if (X + 1 < 10 && enemyTBoard[X + 1, Y].getStatus() == EMPTY)
+                        {
+                            sX = X - search;
+                            sY = Y;
+                            direction = 1;
+                        }
+                        else if (Y + 1 < 10 && enemyTBoard[X, Y + 1].getStatus() == EMPTY)
+                        {
+                            sX = X + search;
+                            sY = Y;
+                            direction = 3;
+                        }
+                        else if (enemyTBoard[X, Y - 1].getStatus() == EMPTY)
+                        {
+                            sX = X;
+                            sY = Y - search;
+                            direction = 0;
+                        }
+                        else
+                        {
+                            branch = 42;
+
+                            sX = RNG.Next(0, 10);
+                            sY = RNG.Next(0, 10);
+                            hitLast = false;
+                        }
+                    }
+                }
+
+                else
+                {
+                    branch = 3;
+                    if (X - search < 0 && enemyTBoard[X - search, Y].getStatus() == EMPTY)
+                    {
+                        sX = X - search;
+                        sY = Y;
+                    }
+                    else
+                    {
+                        search = 1;
+
+                        if (Y - 1 > 0 && enemyTBoard[X, Y - 1].getStatus() == EMPTY)
+                        {
+                            sX = X;
+                            sY = Y - search;
+                            direction = 2;
+                        }
+                        else if (Y + 1 < 10 && enemyTBoard[X, Y + 1].getStatus() == EMPTY)
+                        {
+                            sX = X;
+                            sY = Y + search;
+                            direction = 1;
+                        }
+                        else if (enemyTBoard[X + 1, Y].getStatus() == EMPTY)
+                        {
+                            sX = X + search;
+                            sY = Y;
+                            direction = 0;
+                        }
+                        else
+                        {
+                            branch = 43;
+
+                            sX = RNG.Next(0, 10);
+                            sY = RNG.Next(0, 10);
+                            hitLast = false;
+                        }
+                    }
+                }
+
+                playerPBoard[sX, sY].hitShip();
+
+                if (playerPBoard[sX, sY].getShip().isSunk())
+                {
+                    hitLast = false;
+                }
+
+                search++;
             }
+             
             else
             {
-                randX = RNG.Next(0, 10);
-                randY = RNG.Next(0, 10);
+                branch = 4;
 
-                while (enemyTBoard[randX, randY].getStatus() != EMPTY)
+                direction = -1;
+                search = 1;
+
+                X = RNG.Next(0, 10);
+                Y = RNG.Next(0, 10);
+
+                while (enemyTBoard[X, Y].getStatus() != EMPTY)
                 {
-                    randX = RNG.Next(0, 10);
-                    randY = RNG.Next(0, 10);
+                    X = RNG.Next(0, 10);
+                    Y = RNG.Next(0, 10);
                 }
 
-                hitResult = playerPBoard[randX, randY].hitShip();
-                enemyTBoard[randX, randY].setStatus(hitResult);
+                hitResult = playerPBoard[X, Y].hitShip();
+                enemyTBoard[X, Y].setStatus(hitResult);
+
+                if (!playerPBoard[X, Y].getShip().isSunk() && hitResult == HIT)
+                {
+                    lastXHit = X;
+                    lastYHit = Y;
+                    hitLast = true;
+                }
             }
 
-            if (hitResult == HIT)
-            {
-                lastXHit = randX;
-                lastYHit = randY;
-            }
-            return hitResult;
+
+            return branch;
         }
     }
 }
