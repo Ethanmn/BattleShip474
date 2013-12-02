@@ -1,9 +1,3 @@
-/* NOTE TO SELF: SETTING UP BATTLESHIPS
- * 1) Create all battleships (array?)
- * 2) Assign battleship to board via board.placeShip(ship)
- * 3) Ships will automaticaly gain Tile's corrdinates
- */
-
 using System;
 using System.Collections.Generic;
 using System.Linq;
