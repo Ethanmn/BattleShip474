@@ -83,7 +83,121 @@ namespace Battle_Ship_474
         float enemyturntimer = 0;
         int currentlyPlacing = 0;
       
-        Texture2D usedTile, unusedTile;
+        Texture2D usedTile, unusedTile, smallsq;
+
+        private class Node
+        {
+            public int i, j;
+            public Node(int i, int j)
+            {
+                this.i = i;
+                this.j = j;
+            }
+        }
+        List<Node> targets = new List<Node>();
+        List<Node> already = new List<Node>();
+        private bool valid(int i, int j)
+        {
+            if (i >= 0 && i < 10 && j >= 0 && j < 10)
+                return true;
+            return false;
+        }
+        private bool alreadyShot(Node t)
+        {
+            foreach (Node temp in already)
+                if (temp.i == t.i && temp.j == t.j) 
+                    return true;
+            return false;
+        }
+        private bool alreadyShot(int i, int j)
+        {
+            foreach (Node temp in already)
+                if (temp.i == i && temp.j == j)
+                    return true;
+            return false;
+        }
+        private bool alreadyQueued(int i, int j)
+        {
+            foreach (Node temp in targets)
+                if (temp.i == i && temp.j == j)
+                    return true;
+            return false;
+        }
+        Random rand = new Random();
+        private int shootRand()
+        {
+            int i = -1, j = -1; 
+            do
+            {
+                i = rand.Next(10);
+                j = rand.Next(10);
+            }while(enemyTBoard[i,j].getStatus() != TrackTile.EMPTY);
+
+            int hitResult = playerPBoard[i, j].hitShip();
+            enemyTBoard[i, j].setStatus(hitResult);
+
+            already.Add(new Node(i,j));
+
+            if (hitResult == HIT)
+            {
+                if (valid(i - 1, j) && !alreadyShot(i - 1, j) && !alreadyQueued(i - 1, j))
+                    targets.Add(new Node(i - 1, j));
+                if (valid(i + 1, j) && !alreadyShot(i + 1, j) && !alreadyQueued(i + 1, j))
+                    targets.Add(new Node(i + 1, j));
+                if (valid(i, j - 1) && !alreadyShot(i, j - 1) && !alreadyQueued(i, j - 1))
+                    targets.Add(new Node(i, j - 1));
+                if (valid(i, j + 1) && !alreadyShot(i, j + 1) && !alreadyQueued(i, j + 1))
+                    targets.Add(new Node(i, j + 1));
+            }
+
+            return hitResult;
+        }
+        int pSunk = 0;
+        private int calcSunkShips()
+        {
+            int sunk = 0;
+            if (pBattleShip.isSunk()) sunk++;
+            if (pDestroyerShip.isSunk()) sunk++;
+            if (pPatrolShip.isSunk()) sunk++;
+            if (pSubShip.isSunk()) sunk++;
+            if (pCarrierShip.isSunk()) sunk++;
+            return sunk;
+        }
+        private int shootList()
+        {
+            if (targets.Count == 0) return shootRand();
+
+            int rx = rand.Next(targets.Count);
+
+            int hitResult = playerPBoard[targets[rx].i, targets[rx].j].hitShip();
+            enemyTBoard[targets[rx].i, targets[rx].j].setStatus(hitResult);
+
+            int i = targets[rx].i, j = targets[rx].j;
+
+            already.Add(targets[rx]);
+            targets.RemoveAt(rx);
+
+            if (hitResult == HIT)
+            {
+                if (valid(i - 1, j) && !alreadyShot(i - 1, j) && !alreadyQueued(i - 1, j))
+                    targets.Add(new Node(i - 1, j));
+                if (valid(i + 1, j) && !alreadyShot(i + 1, j) && !alreadyQueued(i + 1, j))
+                    targets.Add(new Node(i + 1, j));
+                if (valid(i, j - 1) && !alreadyShot(i, j - 1) && !alreadyQueued(i, j - 1))
+                    targets.Add(new Node(i, j - 1));
+                if (valid(i, j + 1) && !alreadyShot(i, j + 1) && !alreadyQueued(i, j + 1))
+                    targets.Add(new Node(i, j + 1));
+            }
+
+            if (pSunk < calcSunkShips())
+            {
+                targets = new List<Node>();
+                pSunk = calcSunkShips();
+            }
+
+            return hitResult;
+
+        }
 
         //AI stuffs
         AI enemy;
@@ -244,6 +358,7 @@ namespace Battle_Ship_474
             ffont = Content.Load<SpriteFont>("FancyFont");
             usedTile = Content.Load<Texture2D>("usedTile");
             unusedTile = Content.Load<Texture2D>("unusedTile");
+            smallsq = Content.Load<Texture2D>("smallsq");
 
             visuals = new BoardVisuals(this);
         }
@@ -368,9 +483,6 @@ namespace Battle_Ship_474
                 int x = -1;
                 int y = -1;
 
-                if (pPatrolShip.getStartX() != -1 && pSubShip.getStartX() != -1 && pBattleShip.getStartX() != -1 &&
-                    pDestroyerShip.getStartX() != -1 && pCarrierShip.getStartX() != -1)
-                    placement_done = true;
                 if (currentlyPlacing == 5)
                     placement_done = true;
 
@@ -561,6 +673,7 @@ namespace Battle_Ship_474
 
                             playerturn = false;
                             enemyturntimer = 200;
+
                         }
                     }
 
@@ -581,7 +694,27 @@ namespace Battle_Ship_474
                 {
                     enemyturntimer -= gameTime.ElapsedGameTime.Milliseconds;
                 }
-                if (enemyturntimer < 0) { testString = enemy.attack() + ""; enemyturntimer = 0; playerturn = true; }
+                if (enemyturntimer < 0)
+                {
+                    //testString = enemy.attack() + ""; 
+                    // Enemy AI
+                    if (targets.Count == 0) shootRand();
+                    else shootList();
+
+                    enemyturntimer = 0; playerturn = true;
+
+
+                    if (pBattleShip.isSunk() && pSubShip.isSunk() &&
+                    pPatrolShip.isSunk() && pDestroyerShip.isSunk() &&
+                    pCarrierShip.isSunk())
+                    {
+                        gameover = true;
+                        victory = false;
+
+                        current_state = END_STATE;
+                        visuals.gotoState(END_STATE);
+                    }
+                }
             }
 
             if (!clicked)
@@ -628,7 +761,7 @@ namespace Battle_Ship_474
             // TODO: Add your drawing code here
             
             spriteBatch.Begin();
-            spriteBatch.DrawString(font, testString, pos, Color.OrangeRed);
+            //spriteBatch.DrawString(font, testString, pos, Color.OrangeRed);
 
             /*for (int i = 0; i < SIZE; i++)
             {
@@ -753,7 +886,29 @@ namespace Battle_Ship_474
                 spriteBatch.DrawString(font, "Destroyer", new Vector2(800, 120), enemyShips[1].isSunk() ? Color.DarkRed : Color.Red);
                 spriteBatch.DrawString(font, "Battleship", new Vector2(800, 150), enemyShips[3].isSunk() ? Color.DarkRed : Color.Red);
                 spriteBatch.DrawString(font, "Aircraft Carrier", new Vector2(800, 180), enemyShips[4].isSunk() ? Color.DarkRed : Color.Red);
-                
+
+                for (int i = 0; i < 10; i++)
+                {
+                    for (int j = 0; j < 10; j++)
+                    {
+                        Color temp = Color.White;
+
+                        if (enemyTBoard[i, j].getStatus() == TrackTile.HIT)
+                        {
+                            temp = Color.OrangeRed;
+                        }
+                        else if (enemyTBoard[i, j].getStatus() == TrackTile.MISS)
+                        {
+                            temp = Color.DarkGray;
+                        }
+                        else if (playerPBoard[i, j].getShip().getName() != "Water")
+                        {
+                            temp = Color.Cyan;
+                        }
+
+                        spriteBatch.Draw(smallsq, new Vector2(30 + i * 6, 260 - j * 6), temp);
+                    }
+                }
             }
 
             spriteBatch.End();
