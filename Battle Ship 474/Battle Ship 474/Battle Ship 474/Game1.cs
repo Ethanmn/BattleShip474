@@ -710,6 +710,9 @@ namespace Battle_Ship_474
                     {
                         gameover = true;
                         victory = false;
+
+                        current_state = END_STATE;
+                        visuals.gotoState(END_STATE);
                     }
                 }
             }
