@@ -30,6 +30,7 @@ namespace Battle_Ship_474
 
         KeyboardState keyState;
         GraphicsDeviceManager graphics;
+        RenderTarget2D largeRT;
 
         //Test Stuffs
         SpriteBatch spriteBatch;
@@ -355,6 +356,7 @@ namespace Battle_Ship_474
             smallsq = Content.Load<Texture2D>("smallsq");
 
             visuals = new BoardVisuals(this);
+            largeRT = new RenderTarget2D(GraphicsDevice, graphics.PreferredBackBufferWidth * 2, graphics.PreferredBackBufferHeight * 2, false, SurfaceFormat.Rgba64, DepthFormat.Depth24Stencil8);
         }
 
         /// <summary>
@@ -754,7 +756,7 @@ namespace Battle_Ship_474
 
             // TODO: Add your drawing code here
             
-            spriteBatch.Begin();
+            //spriteBatch.Begin();
             //spriteBatch.DrawString(font, testString, pos, Color.OrangeRed);
 
             /*for (int i = 0; i < SIZE; i++)
@@ -768,17 +770,24 @@ namespace Battle_Ship_474
             spriteBatch.DrawString(font, XString, new Vector2(60, 35), Color.BurlyWood);
             spriteBatch.DrawString(font, YString, new Vector2(50, 35), Color.BurlyWood);*/
                             
-            spriteBatch.End();
+            //spriteBatch.End();
 
+            GraphicsDevice.SetRenderTarget(largeRT);
+            GraphicsDevice.Clear(Color.Black);
+            
             RasterizerState rs = new RasterizerState();
             rs.CullMode = CullMode.CullCounterClockwiseFace;
             GraphicsDevice.RasterizerState = rs;
-            GraphicsDevice.BlendState = BlendState.AlphaBlend;
+            GraphicsDevice.BlendState = current_state == INTRO_STATE ? BlendState.Additive : BlendState.AlphaBlend ;
             GraphicsDevice.DepthStencilState = DepthStencilState.Default;
-            visuals.Draw(graphics, spriteBatch);
+            visuals.Draw(spriteBatch);
 
+            GraphicsDevice.SetRenderTarget(null);
 
             spriteBatch.Begin();
+
+            spriteBatch.Draw(largeRT, Vector2.Zero, null, Color.White, 0f, Vector2.Zero, 0.5f, SpriteEffects.None, 1f);
+
             if (current_state == INTRO_STATE)
                 spriteBatch.DrawString(font, "Click here to start", new Vector2(10, 10), Mouse.GetState().X < 260 && Mouse.GetState().Y < 50 ? Color.White : Color.Gray);
             if (current_state == PLACEMENT_STATE && placement_done)

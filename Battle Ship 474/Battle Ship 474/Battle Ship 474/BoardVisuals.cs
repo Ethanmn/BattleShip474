@@ -38,6 +38,11 @@ namespace Battle_Ship_474
 
             fader = game.Content.Load<Texture2D>("black");
 
+            load(game);
+        }
+
+        public void load(Game game)
+        {
             basicEffect = new BasicEffect(game.GraphicsDevice);
 
             basicEffect.AmbientLightColor = new Vector3(0.2f, 0.2f, 0.2f);
@@ -45,7 +50,7 @@ namespace Battle_Ship_474
             basicEffect.SpecularColor = new Vector3(0.25f, 0.25f, 0.25f);
             basicEffect.SpecularPower = 5.0f;
             basicEffect.Alpha = 1.0f;
-            
+
             basicEffect.LightingEnabled = true;
             if (basicEffect.LightingEnabled)
             {
@@ -55,7 +60,7 @@ namespace Battle_Ship_474
                     basicEffect.DirectionalLight0.DiffuseColor = new Vector3(1f, 1f, 1f); // range is 0 to 1
                     basicEffect.DirectionalLight0.Direction = Vector3.Normalize(new Vector3(0, 0, 1));
                     basicEffect.DirectionalLight0.SpecularColor = Vector3.One;
-                } 
+                }
                 basicEffect.DirectionalLight1.Enabled = true;
                 if (basicEffect.DirectionalLight1.Enabled)
                 {
@@ -160,7 +165,7 @@ namespace Battle_Ship_474
             copyto.DirectionalLight2.Direction = copyfrom.DirectionalLight2.Direction;
         }
 
-        public void Draw(GraphicsDeviceManager graphics, SpriteBatch batch)
+        public void Draw(SpriteBatch batch)
         {
             Matrix projection = Matrix.CreatePerspectiveFieldOfView(
                     MathHelper.ToRadians(45),
