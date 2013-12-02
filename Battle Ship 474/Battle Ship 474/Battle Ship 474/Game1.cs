@@ -243,15 +243,10 @@ namespace Battle_Ship_474
             pCarrierShip = new Ship("Aircraft Carrier");
             playerShips[4] = pCarrierShip;
 
-            ePatrolShip = new Ship("Patrol Boat");
             enemyShips[0] = new Ship("Patrol Boat");
-            eDestroyerShip = new Ship("Destroyer");
             enemyShips[1] = new Ship("Destroyer");
-            eSubShip = new Ship("Submarine");
             enemyShips[2] = new Ship("Submarine");
-            eBattleShip = new Ship("Battleship");
             enemyShips[3] = new Ship("Battleship");
-            eCarrierShip = new Ship("Aircraft Carrier");
             enemyShips[4] = new Ship("Aircraft Carrier");
 
             for (int i = 0; i < SIZE; i++)
