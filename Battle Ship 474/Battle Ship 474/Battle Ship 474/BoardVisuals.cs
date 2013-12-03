@@ -14,7 +14,7 @@ namespace Battle_Ship_474
     class BoardVisuals
     {
 
-        Model sship, mship, lship, sub, carrier, comp1, comp2, square;
+        Model sship, mship, lship, sub, carrier, comp1, comp2, square, sphere;
         BasicEffect basicEffect, sqEffect, shipEffect;
         private int internalState = Game1.INTRO_STATE;
         Texture2D fader;
@@ -34,7 +34,8 @@ namespace Battle_Ship_474
             sub = game.Content.Load<Model>("submarine");
             comp1 = game.Content.Load<Model>("comp1");
             comp2 = game.Content.Load<Model>("comp2");
-            square = game.Content.Load<Model>("square");
+            square = game.Content.Load<Model>("square"); 
+            sphere = game.Content.Load<Model>("sphere");
 
             fader = game.Content.Load<Texture2D>("black");
 
