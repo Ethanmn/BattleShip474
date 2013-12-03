@@ -66,6 +66,9 @@ namespace Battle_Ship_474
         Ship eBattleShip;
         Ship eCarrierShip;
 
+        //Visual stuffs
+        List<Particle> particles;
+
         BoardVisuals visuals;
         bool clicked = false;
         bool scrolled = false;
@@ -266,6 +269,8 @@ namespace Battle_Ship_474
 
             enemy = new AI(ref playerPBoard, ref enemyPBoard, ref enemyTBoard, ref enemyShips);
             enemy.createRandPBoard(NUM_SHIPS);
+
+            particles = new List<Particle>
 
             //Set up a static board
             /*
