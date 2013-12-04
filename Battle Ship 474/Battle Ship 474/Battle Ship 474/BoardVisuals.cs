@@ -13,17 +13,23 @@ namespace Battle_Ship_474
 {
     class BoardVisuals
     {
-
         Model sship, mship, lship, sub, carrier, comp1, comp2, square, sphere;
-        BasicEffect basicEffect, sqEffect, shipEffect;
+        BasicEffect basicEffect, sqEffect, shipEffect, particleEffect;
         private int internalState = Game1.INTRO_STATE;
         Texture2D fader;
 
         List<Vector3> enemysquares;
+        List<Particle> particles;
         int highx, highy;
         TrackTile[,] enemytracker;
         Tile[,] playertracker;
         Ship[] playerships;
+        static float FADE = 0.05f;
+        static int NUM_EXPLODE = 100;
+        static int NUM_SPLASH = 100;
+        static int SPLASH = 0;
+        static int EXPLODE = 1;
+        static int FIRE = 2;
 
         public BoardVisuals(Game1 game)
         {
@@ -105,6 +111,16 @@ namespace Battle_Ship_474
             shipEffect.SpecularPower = 0f;
             shipEffect.Alpha = 0.5f;
             shipEffect.LightingEnabled = true;
+
+            particles = new List<Particle>();
+            particleEffect = new BasicEffect(game.GraphicsDevice);
+            particleEffect.AmbientLightColor = new Vector3(1, 1, 1);
+            particleEffect.DiffuseColor = new Vector3(1, 0, 0);
+            particleEffect.SpecularColor = new Vector3(0, 0, 0);
+            particleEffect.SpecularPower = 0f;
+            particleEffect.Alpha = 0.5f;
+            particleEffect.LightingEnabled = true;
+
             if (shipEffect.LightingEnabled)
             {
                 shipEffect.DirectionalLight0.Enabled = true; // enable each light individually
@@ -121,6 +137,7 @@ namespace Battle_Ship_474
         {
             int mx = Mouse.GetState().X;
             int my = Mouse.GetState().Y;
+            Random RNG = new Random();
 
             highx = -1;
             highy = -1;
@@ -134,6 +151,20 @@ namespace Battle_Ship_474
             enemytracker = track;
             playertracker = own;
             playerships = pships;
+
+            for (int i = 0; i < particles.Count; i++)
+            {
+                particles[i].update();
+                if ((particles[i].type == EXPLODE || particles[i].type == SPLASH) && (particles[i].getPosition().Y < -0.7 || particles[i].getPosition().X > 100.0))
+                {
+                    particles.RemoveAt(i--);
+                }
+                else if (particles[i].type == FIRE && particles[i].getPosition().Y - particles[i].initPos.Y > 0.13f)
+                {
+                    particles[i].setPosition(particles[i].initPos);
+                    particles[i].setVelocity(new Vector3(0, (float)RNG.NextDouble() * 0.002f + 0.002f, 0));
+                }
+            }
         }
 
         public void gotoState(int state)
@@ -164,6 +195,49 @@ namespace Battle_Ship_474
             copyto.DirectionalLight2.DiffuseColor = copyfrom.DirectionalLight2.DiffuseColor;
             copyto.DirectionalLight2.SpecularColor = copyfrom.DirectionalLight2.SpecularColor;
             copyto.DirectionalLight2.Direction = copyfrom.DirectionalLight2.Direction;
+        }
+
+        float pxs = -0.585f, pdx = 0.125f, pzs = -1.85f, pdz = -0.110f, py = -0.55f;
+        public void addExplosion(int sx, int sy)
+        {
+            Random RNG = new Random();
+
+            float partX = pxs + sx * pdx;
+            float partY = py;
+            float partZ = pzs + sy * pdz;
+
+            for (int i = 0; i < NUM_EXPLODE; i++)
+            {
+                particles.Add(new Particle(new Vector3(partX, partY, partZ), new Vector3((float)RNG.NextDouble() * 0.02f - 0.01f, (float)RNG.NextDouble() * 0.02f, (float)RNG.NextDouble() * 0.02f - 0.01f), new Vector3(0, -0.0005f, 0), EXPLODE));
+            }
+        }
+
+        public void addFire(int sx, int sy)
+        {
+            Random RNG = new Random();
+
+            float partX = pxs + sx * pdx;
+            float partY = py;
+            float partZ = pzs + sy * pdz;
+
+            for (int i = 0; i < NUM_EXPLODE; i++)
+            {
+                particles.Add(new Particle(new Vector3(partX + (float)RNG.NextDouble() * 0.04f - 0.02f, partY + (float)RNG.NextDouble() * 0.04f - 0.02f, partZ + (float)RNG.NextDouble() * 0.04f - 0.02f), new Vector3(0, (float)RNG.NextDouble() * 0.002f + 0.002f, 0), new Vector3(0, 0, 0), FIRE));
+            }
+        }
+
+        public void addSplash(int sx, int sy)
+        {
+            Random RNG = new Random();
+
+            float partX = pxs + sx * pdx;
+            float partY = py;
+            float partZ = pzs + sy * pdz;
+
+            for (int i = 0; i < NUM_SPLASH; i++)
+            {
+                particles.Add(new Particle(new Vector3(partX, partY, partZ), new Vector3((float)RNG.NextDouble() * 0.02f - 0.01f, (float)RNG.NextDouble() * 0.02f, (float)RNG.NextDouble() * 0.02f - 0.01f), new Vector3(0, -0.0005f, 0), SPLASH));
+            }
         }
 
         public void Draw(SpriteBatch batch)
@@ -276,12 +350,49 @@ namespace Battle_Ship_474
                     mesh.Draw();
                 }
 
+                foreach (Particle particle in particles)
+                {
+                    float SCALE = 0.005f;
+
+                    particleEffect.World = Matrix.Identity;
+                    particleEffect.View = view;
+                    particleEffect.Projection = projection;
+
+                    Matrix[] particletransforms = new Matrix[sphere.Bones.Count];
+                    sphere.CopyAbsoluteBoneTransformsTo(particletransforms);
+                    Matrix xform = Matrix.CreateScale(SCALE) * Matrix.CreateTranslation(particle.getPosition());
+
+                    foreach (ModelMesh mesh in sphere.Meshes)
+                    {
+                        foreach (BasicEffect e in mesh.Effects)
+                        {
+                            copyEffect(e, particleEffect, xform);
+                            if (particle.type == SPLASH)
+                            {
+                                e.DiffuseColor = new Vector3(0, 0.2f, 1);
+                            }
+                            else if (particle.type == EXPLODE)
+                            {
+                                e.DiffuseColor = new Vector3(1, 0.2f, 0.2f);
+                            }
+                            else if (particle.type == FIRE)
+                            {
+                                e.DiffuseColor = new Vector3(1.0f / ((particle.getPosition().Y - particle.initPos.Y) / FADE), 0, 0);
+                            }
+                            e.World = particletransforms[mesh.ParentBone.Index] * xform;
+                            e.View = view;
+                            e.Projection = projection;
+                        }
+                        mesh.Draw();
+                    }
+                }
+
                 if (playerships != null)
                 {
                     foreach (Ship ship in playerships)
                     {
                         float SCALE = 0.12f;
-                        float xs = -0.55f, dx = 0.14f, zs = -1.8f, dz = -0.105f, y = -0.55f; 
+                        float xs = -0.55f, dx = 0.13f, zs = -1.8f, dz = -0.105f, y = -0.55f; 
 
                         int sx = ship.getStartX();
                         int sy = ship.getStartY();
@@ -446,12 +557,6 @@ namespace Battle_Ship_474
                     batch.End();
                 }
             }
-
-
-            
-
-            
         }
-
     }
 }

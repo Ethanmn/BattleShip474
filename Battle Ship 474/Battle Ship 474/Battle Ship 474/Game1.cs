@@ -36,11 +36,6 @@ namespace Battle_Ship_474
         SpriteBatch spriteBatch;
         SpriteFont font, ffont;
         Vector2 pos = new Vector2(30.0f, 55.0f);
-        String testString;
-        String XString;
-        String YString;
-        Ship testShip;
-        Ship testShip2;
         int status;
         
         //Game board stuffs
@@ -68,6 +63,12 @@ namespace Battle_Ship_474
 
         //Visual stuffs
         List<Particle> particles;
+        static int SPLASH = 0;
+        static int EXPLODE = 1;
+        static int FIRE = 2;
+        public static int lastX;
+        public static int lastY;
+        public static int lastResult;
 
         BoardVisuals visuals;
         bool clicked = false;
@@ -131,6 +132,9 @@ namespace Battle_Ship_474
                 j = rand.Next(10);
             }while(enemyTBoard[i,j].getStatus() != TrackTile.EMPTY);
 
+            lastX = i;
+            lastY = j;
+
             int hitResult = playerPBoard[i, j].hitShip();
             enemyTBoard[i, j].setStatus(hitResult);
 
@@ -171,6 +175,9 @@ namespace Battle_Ship_474
             enemyTBoard[targets[rx].i, targets[rx].j].setStatus(hitResult);
 
             int i = targets[rx].i, j = targets[rx].j;
+
+            lastX = i;
+            lastY = j;
 
             already.Add(targets[rx]);
             targets.RemoveAt(rx);
@@ -270,66 +277,7 @@ namespace Battle_Ship_474
             enemy = new AI(ref playerPBoard, ref enemyPBoard, ref enemyTBoard, ref enemyShips);
             enemy.createRandPBoard(NUM_SHIPS);
 
-            particles = new List<Particle>
-
-            //Set up a static board
-            /*
-            enemyPBoard[1, 3].placeShip(ePatrolShip);
-            enemyPBoard[2, 3].placeShip(ePatrolShip);
-            
-            enemyPBoard[4, 6].placeShip(eDestroyerShip);
-            enemyPBoard[5, 6].placeShip(eDestroyerShip);
-            enemyPBoard[6, 6].placeShip(eDestroyerShip);
-
-            enemyPBoard[8, 1].placeShip(eSubShip);
-            enemyPBoard[8, 2].placeShip(eSubShip);
-            enemyPBoard[8, 3].placeShip(eSubShip);
-
-            enemyPBoard[4, 1].placeShip(eBattleShip);
-            enemyPBoard[5, 1].placeShip(eBattleShip);
-            enemyPBoard[6, 1].placeShip(eBattleShip);
-            enemyPBoard[7, 1].placeShip(eBattleShip);
-
-            enemyPBoard[0, 5].placeShip(eCarrierShip);
-            enemyPBoard[0, 6].placeShip(eCarrierShip);
-            enemyPBoard[0, 7].placeShip(eCarrierShip);
-            enemyPBoard[0, 8].placeShip(eCarrierShip);
-            enemyPBoard[0, 9].placeShip(eCarrierShip);
-            */
-            /*
-            playerPBoard[0, 0].placeShip(pPatrolShip);
-            playerPBoard[1, 0].placeShip(pPatrolShip);
-            pPatrolShip.setStart(0, 0);
-            pPatrolShip.setOrientation(Ship.HOR);
-
-            playerPBoard[4, 6].placeShip(pDestroyerShip);
-            playerPBoard[5, 6].placeShip(pDestroyerShip);
-            playerPBoard[6, 6].placeShip(pDestroyerShip);
-            pDestroyerShip.setStart(4, 6);
-            pDestroyerShip.setOrientation(Ship.HOR);
-
-            playerPBoard[7, 9].placeShip(pSubShip);
-            playerPBoard[8, 9].placeShip(pSubShip);
-            playerPBoard[9, 9].placeShip(pSubShip);
-            pSubShip.setStart(7, 9);
-            pSubShip.setOrientation(Ship.HOR);
-
-            playerPBoard[4, 1].placeShip(pBattleShip);
-            playerPBoard[4, 2].placeShip(pBattleShip);
-            playerPBoard[4, 3].placeShip(pBattleShip);
-            playerPBoard[4, 4].placeShip(pBattleShip);
-            pBattleShip.setStart(4, 1);
-            pBattleShip.setOrientation(Ship.VER);
-
-            playerPBoard[0, 1].placeShip(pCarrierShip);
-            playerPBoard[0, 2].placeShip(pCarrierShip);
-            playerPBoard[0, 3].placeShip(pCarrierShip);
-            playerPBoard[0, 4].placeShip(pCarrierShip);
-            playerPBoard[0, 5].placeShip(pCarrierShip);
-            pCarrierShip.setStart(0, 1);
-            pCarrierShip.setOrientation(Ship.VER);
-            */
-            testString = "Falafel";
+            particles = new List<Particle>();
 
             base.Initialize();
         }
@@ -385,96 +333,6 @@ namespace Battle_Ship_474
                 this.Exit();
 
             keyState = Keyboard.GetState();
-
-            /*if (keyState.IsKeyDown(Keys.A))
-                Y = 0;
-            if (keyState.IsKeyDown(Keys.B))
-                Y = 1;
-            if (keyState.IsKeyDown(Keys.C))
-                Y = 2;
-            if (keyState.IsKeyDown(Keys.D)) 
-                Y = 3;
-            if (keyState.IsKeyDown(Keys.E))
-                Y = 4;
-            if (keyState.IsKeyDown(Keys.F))
-                Y = 5;
-            if (keyState.IsKeyDown(Keys.G))
-                Y = 6;
-            if (keyState.IsKeyDown(Keys.H))
-                Y = 7;
-            if (keyState.IsKeyDown(Keys.I))
-                Y = 8;
-            if (keyState.IsKeyDown(Keys.J))
-                Y = 9;
-            if (keyState.IsKeyDown(Keys.Z))
-                testString = enemyShips[0].getName();
-
-            if (keyState.IsKeyDown(Keys.D0))
-                X = 9;
-            if (keyState.IsKeyDown(Keys.D1))
-                X = 0;
-            if (keyState.IsKeyDown(Keys.D2))
-                X = 1;
-            if (keyState.IsKeyDown(Keys.D3))
-                X = 2;
-            if (keyState.IsKeyDown(Keys.D4))
-                X = 3;
-            if (keyState.IsKeyDown(Keys.D5))
-                X = 4;
-            if (keyState.IsKeyDown(Keys.D6))
-                X = 5;
-            if (keyState.IsKeyDown(Keys.D7))
-                X = 6;
-            if (keyState.IsKeyDown(Keys.D8))
-                X = 7;
-            if (keyState.IsKeyDown(Keys.D9))
-                X = 8;
-
-            XString = (X + 1) + "";
-            YString = (char)((char)Y + 'A') + "";*/
-
-            /*if (keyState.IsKeyDown(Keys.Enter))
-            {
-                status = enemyPBoard[X, Y].hitShip();
-
-                if (status == HIT)
-                {
-                    playerTBoard[X, Y].hitEm();
-                    testString = "HIT!";
-                    if (enemyPBoard[X, Y].getShip().isSunk())
-                    {
-                        testString = "You sunk the enemy's " + enemyPBoard[X, Y].getShip().getName() + "!";
-                    }
-                }
-                else if (status == MISS)
-                {
-                    playerTBoard[X, Y].missEm();
-                    testString = "MISS!";
-                }
-                else if (status == ALREADY_HIT)
-                {
-                    testString = "ALREADY HIT!";
-                    if (enemyPBoard[X, Y].getShip().isSunk())
-                    {
-                        testString = "You sunk the enemy's " + enemyPBoard[X, Y].getShip().getName() + "!";
-                    }
-                }
-                else if (status == -1)
-                {
-                    testString = "WTF?!";
-                }
-
-                /*if (ePatrolShip.isSunk() && eBattleShip.isSunk() &&
-                    eSubShip.isSunk() && eDestroyerShip.isSunk() &&
-                    eCarrierShip.isSunk())*/
-            /*
-                if (enemyShips[0].isSunk() && enemyShips[1].isSunk() &&
-                    enemyShips[2].isSunk() && enemyShips[3].isSunk() &&
-                    enemyShips[4].isSunk())
-                {
-                    testString = "YOU WIN!";
-                }
-            }*/
 
             if (current_state == PLACEMENT_STATE)
             {
@@ -697,10 +555,22 @@ namespace Battle_Ship_474
                 }
                 if (enemyturntimer < 0)
                 {
+                    int partResult;
+
                     //testString = enemy.attack() + ""; 
                     // Enemy AI
-                    if (targets.Count == 0) shootRand();
-                    else shootList();
+                    if (targets.Count == 0) partResult = shootRand();
+                    else partResult = shootList();
+
+                    if (partResult == MISS)
+                    {
+                        visuals.addSplash(lastX, lastY);
+                    }
+                    else if (partResult == HIT)
+                    {
+                        visuals.addExplosion(lastX, lastY);
+                        visuals.addFire(lastX, lastY);
+                    }
 
                     enemyturntimer = 0; playerturn = true;
 
@@ -758,24 +628,6 @@ namespace Battle_Ship_474
         protected override void Draw(GameTime gameTime)
         {
             GraphicsDevice.Clear(Color.Black);
-
-            // TODO: Add your drawing code here
-            
-            //spriteBatch.Begin();
-            //spriteBatch.DrawString(font, testString, pos, Color.OrangeRed);
-
-            /*for (int i = 0; i < SIZE; i++)
-            {
-                for (int j = 0; j < SIZE; j++)
-                {
-                    spriteBatch.DrawString(font, playerTBoard[i, j].getStatus() + "", new Vector2((float)i * 85, (float)j * 50), Color.DeepPink); 
-                }
-            }
-
-            spriteBatch.DrawString(font, XString, new Vector2(60, 35), Color.BurlyWood);
-            spriteBatch.DrawString(font, YString, new Vector2(50, 35), Color.BurlyWood);*/
-                            
-            //spriteBatch.End();
 
             GraphicsDevice.SetRenderTarget(largeRT);
             GraphicsDevice.Clear(Color.Black);

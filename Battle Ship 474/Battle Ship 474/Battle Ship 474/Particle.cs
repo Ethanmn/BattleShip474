@@ -15,17 +15,30 @@ namespace Battle_Ship_474
 {
     class Particle
     {
+        static int SPLASH = 0;
+        static int EXPLODE = 1;
+        static int FIRE = 2;
         static float GRAVITY = 9.8f;
 
         Vector3 position;
+        public Vector3 initPos;
         Vector3 velocity;
         Vector3 accel;
 
-        public Particle(Vector3 position, Vector3 velocity, Vector3 accel)
+        public int type;
+
+        public int age;
+
+        public Particle(Vector3 position, Vector3 velocity, Vector3 accel, int type)
         {
             this.position = position;
+            this.initPos = position;
             this.velocity = velocity;
             this.accel = accel;
+
+            this.type = type;
+
+            this.age = 0;
         }
 
         public Vector3 getPosition()
@@ -54,6 +67,8 @@ namespace Battle_Ship_474
             this.velocity += this.accel;
 
             this.position += this.velocity;
+
+            age++;
 
             return this.position;
         }
