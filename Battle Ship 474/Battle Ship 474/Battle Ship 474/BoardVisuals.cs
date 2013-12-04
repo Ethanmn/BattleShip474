@@ -25,6 +25,62 @@ namespace Battle_Ship_474
         Tile[,] playertracker;
         Ship[] playerships;
 
+
+        VertexDeclaration vertexDeclaration = new VertexDeclaration(new VertexElement[]
+                    {
+                        new VertexElement(0, VertexElementFormat.Vector3, VertexElementUsage.Position, 0),
+                        new VertexElement(12, VertexElementFormat.Color, VertexElementUsage.Color, 0)
+                    }
+        );
+        BasicEffect TbasicEffect;
+
+        private class WaterVertex
+        {
+            public bool up;
+            public Vector3 position;
+            public Color color = Color.DarkBlue;
+
+            public WaterVertex(Vector3 position, bool up)
+            {
+                this.up = up;
+                this.position = position;
+            }
+        }
+        List<WaterVertex> water = new List<WaterVertex>();
+        public const int NUM_WATER = 100;
+        public VertexPositionColor[] getWaterVertices()
+        {
+            VertexPositionColor[] primitiveList = new VertexPositionColor[water.Count];
+
+            for (int x = 0; x < water.Count; x++)
+            {
+                primitiveList[x] = new VertexPositionColor(
+                    water[x].position, water[x].color);
+            }
+
+            return primitiveList;
+        }
+        public short[] getWaterIndices()
+        {
+            short[] triangleListIndices = new short[(NUM_WATER - 1) * (NUM_WATER - 1) * 6];
+
+            for (int x = 0; x < NUM_WATER - 1; x++)
+            {
+                for (int y = 0; y < NUM_WATER - 1; y++)
+                {
+                    triangleListIndices[(x + y * (NUM_WATER - 1)) * 6 + 0] = (short)(NUM_WATER * x + y);
+                    triangleListIndices[(x + y * (NUM_WATER - 1)) * 6 + 1] = (short)(NUM_WATER * x + y + 1);
+                    triangleListIndices[(x + y * (NUM_WATER - 1)) * 6 + 2] = (short)(NUM_WATER * (x + 1) + y);
+
+                    triangleListIndices[(x + y * (NUM_WATER - 1)) * 6 + 3] = (short)(NUM_WATER * (x + 1) + y);
+                    triangleListIndices[(x + y * (NUM_WATER - 1)) * 6 + 4] = (short)(NUM_WATER * x + 1 + y);
+                    triangleListIndices[(x + y * (NUM_WATER - 1)) * 6 + 5] = (short)(NUM_WATER * (x + 1) + 1 + y);
+                }
+            }
+
+            return triangleListIndices;
+        }
+
         public BoardVisuals(Game1 game)
         {
             sship = game.Content.Load<Model>("smallship");
@@ -38,6 +94,24 @@ namespace Battle_Ship_474
             sphere = game.Content.Load<Model>("sphere");
 
             fader = game.Content.Load<Texture2D>("black");
+
+            Random rand = new Random();
+            
+            TbasicEffect = new BasicEffect(game.GraphicsDevice);
+            TbasicEffect.VertexColorEnabled = true;
+
+            float xs = -0.55f, dx = 0.14f, zs = -1.8f, dz = -0.105f, y = -0.55f;
+
+            for (int i = 0; i < NUM_WATER; i++)
+            {
+                for (int j = 0; j < NUM_WATER; j++)
+                {
+                    float ry = (float)rand.NextDouble() * 0.05f;
+                    float tx = (i / (float)NUM_WATER) * 12f - 2f;
+                    float ty = (j / (float)NUM_WATER) * 12f - 2f;
+                    water.Add(new WaterVertex(new Vector3(xs + dx * tx, y + ry, zs + dz * ty), rand.Next(2) == 0));
+                }
+            }
 
             load(game);
         }
@@ -99,19 +173,19 @@ namespace Battle_Ship_474
             sqEffect.LightingEnabled = true;
 
             shipEffect = new BasicEffect(game.GraphicsDevice);
-            shipEffect.AmbientLightColor = new Vector3(0, 1, 1);
-            shipEffect.DiffuseColor = new Vector3(0, 1, 1);
+            shipEffect.AmbientLightColor = new Vector3(0.5f, 0.5f, 0.5f);
+            shipEffect.DiffuseColor = new Vector3(0.5f, 0.5f, 0.5f);
             shipEffect.SpecularColor = new Vector3(0, 0, 0);
             shipEffect.SpecularPower = 0f;
-            shipEffect.Alpha = 0.5f;
+            shipEffect.Alpha = 1f;
             shipEffect.LightingEnabled = true;
             if (shipEffect.LightingEnabled)
             {
                 shipEffect.DirectionalLight0.Enabled = true; // enable each light individually
                 if (shipEffect.DirectionalLight0.Enabled)
                 {
-                    shipEffect.DirectionalLight0.DiffuseColor = new Vector3(0f, 1f, 1f); // range is 0 to 1
-                    shipEffect.DirectionalLight0.Direction = Vector3.Normalize(new Vector3(0, 0, 1));
+                    shipEffect.DirectionalLight0.DiffuseColor = new Vector3(1f, 1f, 1f); // range is 0 to 1
+                    shipEffect.DirectionalLight0.Direction = Vector3.Normalize(new Vector3(1, -1, -1));
                     shipEffect.DirectionalLight0.SpecularColor = Vector3.One;
                 }
             }
@@ -134,6 +208,25 @@ namespace Battle_Ship_474
             enemytracker = track;
             playertracker = own;
             playerships = pships;
+
+            float ymin = -0.55f, ymax = -0.53f, dy = 0.000015f;
+
+            foreach (WaterVertex v in water)
+            {
+                if (v.up)
+                {
+                    v.position.Y += dy * gameTime;
+                    if (v.position.Y > ymax)
+                        v.up = !v.up;
+                }
+                else
+                {
+                    v.position.Y -= dy * gameTime;
+                    if (v.position.Y < ymin)
+                        v.up = !v.up;
+                }
+                v.color = new Color(0f, (v.position.Y - ymin) * 22f, Color.DarkBlue.B);
+            }
         }
 
         public void gotoState(int state)
@@ -166,7 +259,7 @@ namespace Battle_Ship_474
             copyto.DirectionalLight2.Direction = copyfrom.DirectionalLight2.Direction;
         }
 
-        public void Draw(SpriteBatch batch)
+        public void Draw(GraphicsDevice graphicsDevice, SpriteBatch batch)
         {
             Matrix projection = Matrix.CreatePerspectiveFieldOfView(
                     MathHelper.ToRadians(45),
@@ -211,10 +304,10 @@ namespace Battle_Ship_474
             }
             else if (internalState == Game1.PLACEMENT_STATE)
             {
-                Matrix c1_xforms = Matrix.Identity * Matrix.CreateRotationY((float)Math.PI) * Matrix.CreateRotationX((float)Math.PI / 2.5f) * Matrix.CreateTranslation(new Vector3(-1.2f, 0.5f, -3f));
+                Matrix c1_xforms = Matrix.Identity * Matrix.CreateRotationY((float)Math.PI) * Matrix.CreateRotationX((float)Math.PI / 2.5f - Game1.fadeTime * 0.0005f) * Matrix.CreateTranslation(new Vector3(-1.2f, 0.5f, -3f));
                 Matrix[] c1_transforms = new Matrix[comp1.Bones.Count];
                 comp1.CopyAbsoluteBoneTransformsTo(c1_transforms);
-                Matrix c2_xforms = Matrix.Identity * Matrix.CreateRotationX((float)Math.PI / -1f) * Matrix.CreateRotationZ((float)Math.PI) * Matrix.CreateTranslation(new Vector3(1.45f, 0.45f, -4.3f));
+                Matrix c2_xforms = Matrix.Identity * Matrix.CreateRotationX((float)Math.PI / -1f - Game1.fadeTime * 0.0001f) * Matrix.CreateRotationZ((float)Math.PI) * Matrix.CreateTranslation(new Vector3(1.45f, 0.45f, -4.3f));
                 Matrix[] c2_transforms = new Matrix[comp2.Bones.Count];
                 comp2.CopyAbsoluteBoneTransformsTo(c2_transforms);
 
@@ -246,10 +339,12 @@ namespace Battle_Ship_474
             }
             else if (internalState == Game1.GAME_STATE || internalState == Game1.END_STATE)
             {
-                Matrix c1_xforms = Matrix.Identity * Matrix.CreateRotationY((float)Math.PI) * Matrix.CreateTranslation(new Vector3(-1.2f, -0.45f, -3f));
+                Matrix movein = Matrix.CreateTranslation(new Vector3(0.00003f * Game1.fadeTime, -0.0005f * Game1.fadeTime, -0.001f * Game1.fadeTime));
+
+                Matrix c1_xforms = Matrix.Identity * Matrix.CreateRotationY((float)Math.PI) * Matrix.CreateTranslation(new Vector3(-1.2f, -0.45f, -3f)) * movein;
                 Matrix[] c1_transforms = new Matrix[comp1.Bones.Count];
                 comp1.CopyAbsoluteBoneTransformsTo(c1_transforms);
-                Matrix c2_xforms = Matrix.Identity * Matrix.CreateRotationY((float)Math.PI) * Matrix.CreateRotationX((float)Math.PI / -2f) * Matrix.CreateTranslation(new Vector3(1.45f, -1.80f, -2.9f));
+                Matrix c2_xforms = Matrix.Identity * Matrix.CreateRotationY((float)Math.PI) * Matrix.CreateRotationX((float)Math.PI / -2f) * Matrix.CreateTranslation(new Vector3(1.45f, -1.80f, -2.9f)) * movein;
                 Matrix[] c2_transforms = new Matrix[comp2.Bones.Count];
                 comp2.CopyAbsoluteBoneTransformsTo(c2_transforms);
 
@@ -281,7 +376,7 @@ namespace Battle_Ship_474
                     foreach (Ship ship in playerships)
                     {
                         float SCALE = 0.12f;
-                        float xs = -0.55f, dx = 0.14f, zs = -1.8f, dz = -0.105f, y = -0.55f; 
+                        float xs = -0.55f, dx = 0.13f, zs = -1.8f, dz = -0.105f, y = -0.55f; 
 
                         int sx = ship.getStartX();
                         int sy = ship.getStartY();
@@ -294,7 +389,7 @@ namespace Battle_Ship_474
 
                             Matrix[] shiptransforms = new Matrix[sship.Bones.Count];
                             sship.CopyAbsoluteBoneTransformsTo(shiptransforms);
-                            Matrix xform = Matrix.CreateScale(SCALE) * (Matrix.CreateRotationY(ship.getOrientation() == Ship.HOR ? (float)Math.PI / -2f : 0)) * Matrix.CreateTranslation(xs + sx * dx, y, zs + sy * dz);
+                            Matrix xform = Matrix.CreateScale(SCALE) * (Matrix.CreateRotationY(ship.getOrientation() == Ship.HOR ? (float)Math.PI / -2f : 0)) * Matrix.CreateTranslation(xs + sx * dx, y, zs + sy * dz) * movein;
 
                             foreach (ModelMesh mesh in sship.Meshes)
                             {
@@ -316,7 +411,7 @@ namespace Battle_Ship_474
 
                             Matrix[] shiptransforms = new Matrix[mship.Bones.Count];
                             mship.CopyAbsoluteBoneTransformsTo(shiptransforms);
-                            Matrix xform = Matrix.CreateScale(SCALE) * (Matrix.CreateRotationY(ship.getOrientation() == Ship.HOR ? (float)Math.PI / -2f : 0)) * Matrix.CreateTranslation(xs + sx * dx, y, zs + sy * dz);
+                            Matrix xform = Matrix.CreateScale(SCALE) * (Matrix.CreateRotationY(ship.getOrientation() == Ship.HOR ? (float)Math.PI / -2f : 0)) * Matrix.CreateTranslation(xs + sx * dx, y, zs + sy * dz) * movein;
 
                             foreach (ModelMesh mesh in mship.Meshes)
                             {
@@ -338,7 +433,7 @@ namespace Battle_Ship_474
 
                             Matrix[] shiptransforms = new Matrix[sub.Bones.Count];
                             sub.CopyAbsoluteBoneTransformsTo(shiptransforms);
-                            Matrix xform = Matrix.CreateScale(SCALE) * (Matrix.CreateRotationY(ship.getOrientation() == Ship.HOR? (float)Math.PI / -2f : 0)) * Matrix.CreateTranslation(xs + sx * dx, y, zs + sy * dz);
+                            Matrix xform = Matrix.CreateScale(SCALE) * (Matrix.CreateRotationY(ship.getOrientation() == Ship.HOR ? (float)Math.PI / -2f : 0)) * Matrix.CreateTranslation(xs + sx * dx, y, zs + sy * dz) * movein;
 
                             foreach (ModelMesh mesh in sub.Meshes)
                             {
@@ -360,7 +455,7 @@ namespace Battle_Ship_474
 
                             Matrix[] shiptransforms = new Matrix[lship.Bones.Count];
                             lship.CopyAbsoluteBoneTransformsTo(shiptransforms);
-                            Matrix xform = Matrix.CreateScale(SCALE) * (Matrix.CreateRotationY(ship.getOrientation() == Ship.HOR ? (float)Math.PI / -2f : 0)) * Matrix.CreateTranslation(xs + sx * dx, y, zs + sy * dz);
+                            Matrix xform = Matrix.CreateScale(SCALE) * (Matrix.CreateRotationY(ship.getOrientation() == Ship.HOR ? (float)Math.PI / -2f : 0)) * Matrix.CreateTranslation(xs + sx * dx, y, zs + sy * dz) * movein;
 
                             foreach (ModelMesh mesh in lship.Meshes)
                             {
@@ -382,7 +477,7 @@ namespace Battle_Ship_474
 
                             Matrix[] shiptransforms = new Matrix[carrier.Bones.Count];
                             carrier.CopyAbsoluteBoneTransformsTo(shiptransforms);
-                            Matrix xform = Matrix.CreateScale(SCALE) * (Matrix.CreateRotationY(ship.getOrientation() == Ship.HOR ? (float)Math.PI / -2f : 0)) * Matrix.CreateTranslation(xs + sx * dx, y, zs + sy * dz);
+                            Matrix xform = Matrix.CreateScale(SCALE) * (Matrix.CreateRotationY(ship.getOrientation() == Ship.HOR ? (float)Math.PI / -2f : 0)) * Matrix.CreateTranslation(xs + sx * dx, y, zs + sy * dz) * movein;
 
                             foreach (ModelMesh mesh in carrier.Meshes)
                             {
@@ -398,6 +493,25 @@ namespace Battle_Ship_474
                         }
                     }
                 }
+                
+                foreach (EffectPass pass in TbasicEffect.CurrentTechnique.Passes)
+                {
+                    pass.Apply();
+
+                    TbasicEffect.Projection = projection;
+                    TbasicEffect.View = view;
+                    TbasicEffect.World = movein;
+
+                    graphicsDevice.DrawUserIndexedPrimitives<VertexPositionColor>(
+                        PrimitiveType.TriangleList,
+                        getWaterVertices(),
+                        0,   // vertex buffer offset to add to each element of the index buffer
+                        NUM_WATER * NUM_WATER,   // number of vertices to draw
+                        getWaterIndices(),
+                        0,   // first index element to read
+                        2 * (NUM_WATER - 1) * (NUM_WATER - 1)  // number of primitives to draw
+                    );
+                }
 
                 sqEffect.World = Matrix.Identity;
                 sqEffect.View = view;
@@ -409,7 +523,7 @@ namespace Battle_Ship_474
                 {
                     for (int j = 0; j < 10; j++)
                     {
-                        Matrix cubexforms = Matrix.CreateScale(0.05f) * Matrix.CreateRotationX((float)Math.PI / 2f) * Matrix.CreateTranslation(enemysquares[i * 10 + j]);
+                        Matrix cubexforms = Matrix.CreateScale(0.05f) * Matrix.CreateRotationX((float)Math.PI / 2f) * Matrix.CreateTranslation(enemysquares[i * 10 + j]) * movein;
 
                         foreach (ModelMesh mesh in square.Meshes)
                         {

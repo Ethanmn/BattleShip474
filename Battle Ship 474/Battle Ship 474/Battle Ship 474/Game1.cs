@@ -86,6 +86,7 @@ namespace Battle_Ship_474
       
         Texture2D usedTile, unusedTile, smallsq;
 
+        #region AI
         private class Node
         {
             public int i, j;
@@ -202,6 +203,12 @@ namespace Battle_Ship_474
 
         //AI stuffs
         AI enemy;
+        #endregion
+        public static float fadeTime = 0;
+        public static bool fading = false;
+        public static bool fade_in = false;
+        public const float totalFade = 2000; 
+        public Texture2D fader;
 
         public Game1()
         {
@@ -360,6 +367,7 @@ namespace Battle_Ship_474
             usedTile = Content.Load<Texture2D>("usedTile");
             unusedTile = Content.Load<Texture2D>("unusedTile");
             smallsq = Content.Load<Texture2D>("smallsq");
+            fader = Content.Load<Texture2D>("black");
 
             visuals = new BoardVisuals(this);
             largeRT = new RenderTarget2D(GraphicsDevice, graphics.PreferredBackBufferWidth * 2, graphics.PreferredBackBufferHeight * 2, false, SurfaceFormat.Rgba64, DepthFormat.Depth24Stencil8);
@@ -719,6 +727,7 @@ namespace Battle_Ship_474
                 }
             }
 
+
             if (!clicked)
             {
                 if (Mouse.GetState().LeftButton == ButtonState.Pressed)
@@ -726,12 +735,16 @@ namespace Battle_Ship_474
                     if (current_state == INTRO_STATE && Mouse.GetState().X < 260 && Mouse.GetState().Y < 50)
                     {
                         current_state = PLACEMENT_STATE;
-                        visuals.gotoState(PLACEMENT_STATE);
+                        //visuals.gotoState(PLACEMENT_STATE);
+                        fade_in = false;
+                        fading = true;
                     }
                     else if (current_state == PLACEMENT_STATE && Mouse.GetState().X < 260 && Mouse.GetState().Y > 540 && placement_done)
                     {
                         current_state = GAME_STATE;
-                        visuals.gotoState(GAME_STATE);
+                        //visuals.gotoState(GAME_STATE);
+                        fade_in = false;
+                        fading = true;
                     }
                     else if (current_state == GAME_STATE && gameover)
                     {
@@ -745,6 +758,25 @@ namespace Battle_Ship_474
             else if (Mouse.GetState().LeftButton != ButtonState.Pressed)
             {
                 clicked = false;
+            }
+
+            if (fading && fade_in)
+            {
+                fadeTime -= gameTime.ElapsedGameTime.Milliseconds;
+            }
+            if (fading && !fade_in)
+            {
+                fadeTime += gameTime.ElapsedGameTime.Milliseconds;
+            }
+            if (fading && !fade_in && fadeTime > totalFade)
+            {
+                fade_in = true;
+                visuals.gotoState(current_state);
+            }
+            if (fading && fade_in && fadeTime < 0)
+            {
+                fading = false;
+                fadeTime = 0;
             }
 
             visuals.update(gameTime.ElapsedGameTime.Milliseconds, playerTBoard, playerPBoard, playerShips);
@@ -784,9 +816,9 @@ namespace Battle_Ship_474
             RasterizerState rs = new RasterizerState();
             rs.CullMode = CullMode.CullCounterClockwiseFace;
             GraphicsDevice.RasterizerState = rs;
-            GraphicsDevice.BlendState = current_state == INTRO_STATE ? BlendState.Additive : BlendState.AlphaBlend ;
+            GraphicsDevice.BlendState = (current_state == INTRO_STATE || current_state == PLACEMENT_STATE && fading && !fade_in) ? BlendState.Additive : BlendState.AlphaBlend ;
             GraphicsDevice.DepthStencilState = DepthStencilState.Default;
-            visuals.Draw(spriteBatch);
+            visuals.Draw(GraphicsDevice, spriteBatch);
 
             GraphicsDevice.SetRenderTarget(null);
 
@@ -805,119 +837,127 @@ namespace Battle_Ship_474
 
             //spriteBatch.DrawString(font, Mouse.GetState().X + " " + Mouse.GetState().Y, Vector2.Zero, Color.Red);
 
-            if (current_state == GAME_STATE)
-                spriteBatch.DrawString(ffont, playerturn ? "Your turn" : "Enemy's turn", new Vector2(10, 10), playerturn ? Color.LimeGreen : Color.Red);
-            if (current_state == PLACEMENT_STATE)
-                spriteBatch.DrawString(ffont, "Place your ships!", new Vector2(10, 10), Color.LimeGreen);
-
-            if (current_state == PLACEMENT_STATE)
+            if (!fading)
             {
-                spriteBatch.DrawString(font, "Patrol Boat", new Vector2(10, 60), pPatrolShip.getStartX() == -1 ? Color.Green : Color.LimeGreen);
-                spriteBatch.DrawString(font, "Submarine", new Vector2(10, 90), pSubShip.getStartX() == -1 ? Color.Green : Color.LimeGreen);
-                spriteBatch.DrawString(font, "Destroyer", new Vector2(10, 120), pDestroyerShip.getStartX() == -1 ? Color.Green : Color.LimeGreen);
-                spriteBatch.DrawString(font, "Battleship", new Vector2(10, 150), pBattleShip.getStartX() == -1 ? Color.Green : Color.LimeGreen);
-                spriteBatch.DrawString(font, "Aircraft Carrier", new Vector2(10, 180), pCarrierShip.getStartX() == -1 ? Color.Green : Color.LimeGreen);
+                if (current_state == GAME_STATE)
+                    spriteBatch.DrawString(ffont, playerturn ? "Your turn" : "Enemy's turn", new Vector2(10, 10), playerturn ? Color.LimeGreen : Color.Red);
+                if (current_state == PLACEMENT_STATE)
+                    spriteBatch.DrawString(ffont, "Place your ships!", new Vector2(10, 10), Color.LimeGreen);
 
-                for (int i = 0; i < 10; i++)
+                if (current_state == PLACEMENT_STATE)
                 {
-                    for (int j = 0; j < 10; j++)
+                    spriteBatch.DrawString(font, "Patrol Boat", new Vector2(10, 60), pPatrolShip.getStartX() == -1 ? Color.Green : Color.LimeGreen);
+                    spriteBatch.DrawString(font, "Submarine", new Vector2(10, 90), pSubShip.getStartX() == -1 ? Color.Green : Color.LimeGreen);
+                    spriteBatch.DrawString(font, "Destroyer", new Vector2(10, 120), pDestroyerShip.getStartX() == -1 ? Color.Green : Color.LimeGreen);
+                    spriteBatch.DrawString(font, "Battleship", new Vector2(10, 150), pBattleShip.getStartX() == -1 ? Color.Green : Color.LimeGreen);
+                    spriteBatch.DrawString(font, "Aircraft Carrier", new Vector2(10, 180), pCarrierShip.getStartX() == -1 ? Color.Green : Color.LimeGreen);
+
+                    for (int i = 0; i < 10; i++)
                     {
-                        if (playerPBoard[i, j].getShip().getName() == "Water")
+                        for (int j = 0; j < 10; j++)
                         {
-                            bool placing = false;
-                            if (currentlyPlacing == 0 && pPatrolShip.getStartX() != -1 && pPatrolShip.getStartY() != -1)
+                            if (playerPBoard[i, j].getShip().getName() == "Water")
                             {
-                                int dx = pPatrolShip.getOrientation() == Ship.HOR ? 1 : 0;
-                                int dy = pPatrolShip.getOrientation() == Ship.VER ? 1 : 0;
+                                bool placing = false;
+                                if (currentlyPlacing == 0 && pPatrolShip.getStartX() != -1 && pPatrolShip.getStartY() != -1)
+                                {
+                                    int dx = pPatrolShip.getOrientation() == Ship.HOR ? 1 : 0;
+                                    int dy = pPatrolShip.getOrientation() == Ship.VER ? 1 : 0;
 
-                                if (pPatrolShip.getStartX() == i && pPatrolShip.getStartY() == j) placing = true;
-                                if (pPatrolShip.getStartX() + dx == i && pPatrolShip.getStartY() + dy == j) placing = true;
+                                    if (pPatrolShip.getStartX() == i && pPatrolShip.getStartY() == j) placing = true;
+                                    if (pPatrolShip.getStartX() + dx == i && pPatrolShip.getStartY() + dy == j) placing = true;
+                                }
+                                if (currentlyPlacing == 1 && pSubShip.getStartX() != -1 && pSubShip.getStartY() != -1)
+                                {
+                                    int dx = pSubShip.getOrientation() == Ship.HOR ? 1 : 0;
+                                    int dy = pSubShip.getOrientation() == Ship.VER ? 1 : 0;
+
+                                    if (pSubShip.getStartX() == i && pSubShip.getStartY() == j) placing = true;
+                                    if (pSubShip.getStartX() + dx == i && pSubShip.getStartY() + dy == j) placing = true;
+                                    if (pSubShip.getStartX() + dx * 2 == i && pSubShip.getStartY() + dy * 2 == j) placing = true;
+                                }
+                                if (currentlyPlacing == 2 && pDestroyerShip.getStartX() != -1 && pDestroyerShip.getStartY() != -1)
+                                {
+                                    int dx = pDestroyerShip.getOrientation() == Ship.HOR ? 1 : 0;
+                                    int dy = pDestroyerShip.getOrientation() == Ship.VER ? 1 : 0;
+
+                                    if (pDestroyerShip.getStartX() == i && pDestroyerShip.getStartY() == j) placing = true;
+                                    if (pDestroyerShip.getStartX() + dx == i && pDestroyerShip.getStartY() + dy == j) placing = true;
+                                    if (pDestroyerShip.getStartX() + dx * 2 == i && pDestroyerShip.getStartY() + dy * 2 == j) placing = true;
+                                }
+                                if (currentlyPlacing == 3 && pBattleShip.getStartX() != -1 && pBattleShip.getStartY() != -1)
+                                {
+                                    int dx = pBattleShip.getOrientation() == Ship.HOR ? 1 : 0;
+                                    int dy = pBattleShip.getOrientation() == Ship.VER ? 1 : 0;
+
+                                    if (pBattleShip.getStartX() == i && pBattleShip.getStartY() == j) placing = true;
+                                    if (pBattleShip.getStartX() + dx == i && pBattleShip.getStartY() + dy == j) placing = true;
+                                    if (pBattleShip.getStartX() + dx * 2 == i && pBattleShip.getStartY() + dy * 2 == j) placing = true;
+                                    if (pBattleShip.getStartX() + dx * 3 == i && pBattleShip.getStartY() + dy * 3 == j) placing = true;
+                                }
+                                if (currentlyPlacing == 4 && pCarrierShip.getStartX() != -1 && pCarrierShip.getStartY() != -1)
+                                {
+                                    int dx = pCarrierShip.getOrientation() == Ship.HOR ? 1 : 0;
+                                    int dy = pCarrierShip.getOrientation() == Ship.VER ? 1 : 0;
+
+                                    if (pCarrierShip.getStartX() == i && pCarrierShip.getStartY() == j) placing = true;
+                                    if (pCarrierShip.getStartX() + dx == i && pCarrierShip.getStartY() + dy == j) placing = true;
+                                    if (pCarrierShip.getStartX() + dx * 2 == i && pCarrierShip.getStartY() + dy * 2 == j) placing = true;
+                                    if (pCarrierShip.getStartX() + dx * 3 == i && pCarrierShip.getStartY() + dy * 3 == j) placing = true;
+                                    if (pCarrierShip.getStartX() + dx * 4 == i && pCarrierShip.getStartY() + dy * 4 == j) placing = true;
+                                }
+                                spriteBatch.Draw(unusedTile, new Vector2(250 + i * 50, 500 - j * 50), placing ? new Color(1f, 1f, 0.5f, 0.8f) : new Color(0.6f, 0.6f, 0.6f, 0.5f));
+
                             }
-                            if (currentlyPlacing == 1 && pSubShip.getStartX() != -1 && pSubShip.getStartY() != -1)
+                            else
                             {
-                                int dx = pSubShip.getOrientation() == Ship.HOR ? 1 : 0;
-                                int dy = pSubShip.getOrientation() == Ship.VER ? 1 : 0;
-
-                                if (pSubShip.getStartX() == i && pSubShip.getStartY() == j) placing = true;
-                                if (pSubShip.getStartX() + dx == i && pSubShip.getStartY() + dy == j) placing = true;
-                                if (pSubShip.getStartX() + dx * 2 == i && pSubShip.getStartY() + dy * 2 == j) placing = true;
+                                spriteBatch.Draw(usedTile, new Vector2(250 + i * 50, 500 - j * 50), new Color(0.6f, 0.6f, 0.6f, 0.5f));
                             }
-                            if (currentlyPlacing == 2 && pDestroyerShip.getStartX() != -1 && pDestroyerShip.getStartY() != -1)
-                            {
-                                int dx = pDestroyerShip.getOrientation() == Ship.HOR ? 1 : 0;
-                                int dy = pDestroyerShip.getOrientation() == Ship.VER ? 1 : 0;
-
-                                if (pDestroyerShip.getStartX() == i && pDestroyerShip.getStartY() == j) placing = true;
-                                if (pDestroyerShip.getStartX() + dx == i && pDestroyerShip.getStartY() + dy == j) placing = true;
-                                if (pDestroyerShip.getStartX() + dx * 2 == i && pDestroyerShip.getStartY() + dy * 2 == j) placing = true;
-                            }
-                            if (currentlyPlacing == 3 && pBattleShip.getStartX() != -1 && pBattleShip.getStartY() != -1)
-                            {
-                                int dx = pBattleShip.getOrientation() == Ship.HOR ? 1 : 0;
-                                int dy = pBattleShip.getOrientation() == Ship.VER ? 1 : 0;
-
-                                if (pBattleShip.getStartX() == i && pBattleShip.getStartY() == j) placing = true;
-                                if (pBattleShip.getStartX() + dx == i && pBattleShip.getStartY() + dy == j) placing = true;
-                                if (pBattleShip.getStartX() + dx * 2 == i && pBattleShip.getStartY() + dy * 2 == j) placing = true;
-                                if (pBattleShip.getStartX() + dx * 3 == i && pBattleShip.getStartY() + dy * 3 == j) placing = true;
-                            }
-                            if (currentlyPlacing == 4 && pCarrierShip.getStartX() != -1 && pCarrierShip.getStartY() != -1)
-                            {
-                                int dx = pCarrierShip.getOrientation() == Ship.HOR ? 1 : 0;
-                                int dy = pCarrierShip.getOrientation() == Ship.VER ? 1 : 0;
-
-                                if (pCarrierShip.getStartX() == i && pCarrierShip.getStartY() == j) placing = true;
-                                if (pCarrierShip.getStartX() + dx == i && pCarrierShip.getStartY() + dy == j) placing = true;
-                                if (pCarrierShip.getStartX() + dx * 2 == i && pCarrierShip.getStartY() + dy * 2 == j) placing = true;
-                                if (pCarrierShip.getStartX() + dx * 3 == i && pCarrierShip.getStartY() + dy * 3 == j) placing = true;
-                                if (pCarrierShip.getStartX() + dx * 4 == i && pCarrierShip.getStartY() + dy * 4 == j) placing = true;
-                            }
-                            spriteBatch.Draw(unusedTile, new Vector2(250 + i * 50, 500 - j * 50), placing? new Color(1f, 1f, 0.5f, 0.8f) : new Color(0.6f, 0.6f, 0.6f, 0.5f));
-                            
                         }
-                        else
+                    }
+                }
+                if (current_state == GAME_STATE)
+                {
+                    spriteBatch.DrawString(font, "Patrol Boat", new Vector2(10, 60), pPatrolShip.isSunk() ? Color.Green : Color.LimeGreen);
+                    spriteBatch.DrawString(font, "Submarine", new Vector2(10, 90), pSubShip.isSunk() ? Color.Green : Color.LimeGreen);
+                    spriteBatch.DrawString(font, "Destroyer", new Vector2(10, 120), pDestroyerShip.isSunk() ? Color.Green : Color.LimeGreen);
+                    spriteBatch.DrawString(font, "Battleship", new Vector2(10, 150), pBattleShip.isSunk() ? Color.Green : Color.LimeGreen);
+                    spriteBatch.DrawString(font, "Aircraft Carrier", new Vector2(10, 180), pCarrierShip.isSunk() ? Color.Green : Color.LimeGreen);
+
+                    spriteBatch.DrawString(font, "Patrol Boat", new Vector2(800, 60), enemyShips[0].isSunk() ? Color.DarkRed : Color.Red);
+                    spriteBatch.DrawString(font, "Submarine", new Vector2(800, 90), enemyShips[2].isSunk() ? Color.DarkRed : Color.Red);
+                    spriteBatch.DrawString(font, "Destroyer", new Vector2(800, 120), enemyShips[1].isSunk() ? Color.DarkRed : Color.Red);
+                    spriteBatch.DrawString(font, "Battleship", new Vector2(800, 150), enemyShips[3].isSunk() ? Color.DarkRed : Color.Red);
+                    spriteBatch.DrawString(font, "Aircraft Carrier", new Vector2(800, 180), enemyShips[4].isSunk() ? Color.DarkRed : Color.Red);
+
+                    for (int i = 0; i < 10; i++)
+                    {
+                        for (int j = 0; j < 10; j++)
                         {
-                            spriteBatch.Draw(usedTile, new Vector2(250 + i * 50, 500 - j * 50), new Color(0.6f, 0.6f, 0.6f, 0.5f));
+                            Color temp = Color.White;
+
+                            if (enemyTBoard[i, j].getStatus() == TrackTile.HIT)
+                            {
+                                temp = Color.OrangeRed;
+                            }
+                            else if (enemyTBoard[i, j].getStatus() == TrackTile.MISS)
+                            {
+                                temp = Color.DarkGray;
+                            }
+                            else if (playerPBoard[i, j].getShip().getName() != "Water")
+                            {
+                                temp = Color.Cyan;
+                            }
+
+                            spriteBatch.Draw(smallsq, new Vector2(30 + i * 6, 260 - j * 6), temp);
                         }
                     }
                 }
             }
-            if (current_state == GAME_STATE)
+
+            if (fading)
             {
-                spriteBatch.DrawString(font, "Patrol Boat", new Vector2(10, 60), pPatrolShip.isSunk() ? Color.Green : Color.LimeGreen);
-                spriteBatch.DrawString(font, "Submarine", new Vector2(10, 90), pSubShip.isSunk() ? Color.Green : Color.LimeGreen);
-                spriteBatch.DrawString(font, "Destroyer", new Vector2(10, 120), pDestroyerShip.isSunk() ? Color.Green : Color.LimeGreen);
-                spriteBatch.DrawString(font, "Battleship", new Vector2(10, 150), pBattleShip.isSunk() ? Color.Green : Color.LimeGreen);
-                spriteBatch.DrawString(font, "Aircraft Carrier", new Vector2(10, 180), pCarrierShip.isSunk() ? Color.Green : Color.LimeGreen);
-
-                spriteBatch.DrawString(font, "Patrol Boat", new Vector2(800, 60), enemyShips[0].isSunk() ? Color.DarkRed : Color.Red);
-                spriteBatch.DrawString(font, "Submarine", new Vector2(800, 90), enemyShips[2].isSunk() ? Color.DarkRed : Color.Red);
-                spriteBatch.DrawString(font, "Destroyer", new Vector2(800, 120), enemyShips[1].isSunk() ? Color.DarkRed : Color.Red);
-                spriteBatch.DrawString(font, "Battleship", new Vector2(800, 150), enemyShips[3].isSunk() ? Color.DarkRed : Color.Red);
-                spriteBatch.DrawString(font, "Aircraft Carrier", new Vector2(800, 180), enemyShips[4].isSunk() ? Color.DarkRed : Color.Red);
-
-                for (int i = 0; i < 10; i++)
-                {
-                    for (int j = 0; j < 10; j++)
-                    {
-                        Color temp = Color.White;
-
-                        if (enemyTBoard[i, j].getStatus() == TrackTile.HIT)
-                        {
-                            temp = Color.OrangeRed;
-                        }
-                        else if (enemyTBoard[i, j].getStatus() == TrackTile.MISS)
-                        {
-                            temp = Color.DarkGray;
-                        }
-                        else if (playerPBoard[i, j].getShip().getName() != "Water")
-                        {
-                            temp = Color.Cyan;
-                        }
-
-                        spriteBatch.Draw(smallsq, new Vector2(30 + i * 6, 260 - j * 6), temp);
-                    }
-                }
+                spriteBatch.Draw(fader, Vector2.Zero, null, new Color(1, 1, 1, fadeTime / totalFade), 0f, Vector2.Zero, 1f, SpriteEffects.None, 1f);
             }
 
             spriteBatch.End();
